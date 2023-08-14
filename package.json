@@ -1,0 +1,57 @@
+{
+  "name": "silent-pay",
+  "version": "0.0.0",
+  "description": "A Silent Payments library",
+  "author": "Anmol Sharma",
+  "license": "MIT",
+  "homepage": "https://github.com/Bitshala-Incubator/silent-pay",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bitshala-Incubator/silent-pay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bitshala-Incubator/silent-pay/issues"
+  },
+  "keywords": [
+    "silent payments",
+    "bitcoin"
+  ],
+  "type": "module",
+  "main": "./dist/silent-pay.umd.cjs",
+  "module": "./dist/silent-pay.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/silent-pay.js",
+      "require": "./dist/silent-pay.umd.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "format": "prettier --ignore-path .gitignore --write --loglevel=silent --write \"**/*.+(js|ts|json)\"",
+    "lint": "eslint --ext .js,.ts .",
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "test:watch": "jest --watchAll",
+    "types:check": "tsc --noemit"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.3",
+    "@types/node": "^20.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "eslint": "^8.40.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "jest": "^29.6.2",
+    "prettier": "^2.7.1",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.5.2"
+  }
+}

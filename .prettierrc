@@ -1,0 +1,18 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "tabWidth": 4,
+  "useTabs": false,
+  "importOrder": ["^components/(.*)$", "^src/(.*)$",  "^[./]"],
+	"importOrderSeparation": true,
+	"importOrderSortSpecifiers": true,
+  "importOrderParserPlugins" : ["typescript", "decorators-legacy"],
+  "overrides": [
+    {
+      "files": ["*.yaml", "*.json"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}
