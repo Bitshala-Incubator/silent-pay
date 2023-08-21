@@ -38,6 +38,9 @@
     "test:watch": "jest --watchAll",
     "types:check": "tsc --noemit"
   },
+  "dependencies": {
+    "bcoin": "github:Bitshala-Incubator/bcoin#0ea052082462a98c9d2b023270cb7af31adc1845"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "@types/node": "^20.5.0",
