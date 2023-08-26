@@ -1,5 +1,6 @@
 import HDPrivateKey from 'bcoin/dist/hd/private';
 import { bech32m } from 'bech32';
+import { secp256k1 } from 'bcrypto';
 
 export const deriveSilentPaymentsKeyPair = (
     master: HDPrivateKey,
@@ -41,4 +42,15 @@ export const decodeSilentPaymentAddress = (
         scanKey: key.slice(0, 33),
         spendKey: key.slice(33),
     };
+};
+
+export const createLabeledSilentPaymentAddress = (
+    scanKey: Buffer,
+    spendKey: Buffer,
+    m: Buffer,
+    hrp: string = 'tsp',
+    version: number = 0,
+) => {
+    spendKey = secp256k1.publicKeyTweakAdd(spendKey, m, true);
+    return encodeSilentPaymentAddress(scanKey, spendKey, hrp, version);
 };
