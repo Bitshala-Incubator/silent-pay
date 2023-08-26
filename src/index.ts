@@ -1,1 +1,5 @@
-export { default as sum } from './sum';
+export {
+    deriveSilentPaymentsKeyPair,
+    decodeSilentPaymentAddress,
+    encodeSilentPaymentAddress,
+} from './silent-pay.ts';
