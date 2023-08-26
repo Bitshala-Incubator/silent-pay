@@ -39,7 +39,9 @@
     "types:check": "tsc --noemit"
   },
   "dependencies": {
-    "bcoin": "github:Bitshala-Incubator/bcoin#0ea052082462a98c9d2b023270cb7af31adc1845"
+    "bcoin": "github:Bitshala-Incubator/bcoin#0ea052082462a98c9d2b023270cb7af31adc1845",
+    "bcrypto": "github:Bitshala-Incubator/bcrypto#7009d13b8ee1f66fbc87c9344b9f36b3c4a73f38",
+    "bech32": "^2.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
