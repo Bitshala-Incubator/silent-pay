@@ -31,7 +31,8 @@
   ],
   "scripts": {
     "build": "tsc && vite build",
-    "format": "prettier --ignore-path .gitignore --write --loglevel=silent --write \"**/*.+(js|ts|json)\"",
+    "format": "prettier --ignore-path .gitignore --loglevel=silent --write \"**/*.+(js|ts|json)\"",
+    "format:check": "prettier --check \"**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .js,.ts .",
     "test": "jest",
     "test:cov": "jest --coverage",
