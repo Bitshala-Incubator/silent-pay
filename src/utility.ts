@@ -46,3 +46,9 @@ export const calculateSumOfPrivateKeys = (keys: PrivateKey[]): Buffer => {
         return secp256k1.privateKeyTweakAdd(acc, key);
     }, negatedKeys[0]);
 };
+
+export const serialiseUint32 = (n: number): Buffer => {
+    const buf = Buffer.alloc(4);
+    buf.writeUInt32BE(n);
+    return buf;
+};
