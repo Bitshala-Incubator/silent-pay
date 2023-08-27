@@ -30,7 +30,7 @@ export const decodeSilentPaymentAddress = (
     address: string,
     hrp: string = 'tsp',
 ): { scanKey: Buffer; spendKey: Buffer } => {
-    const { prefix, words } = bech32m.decode(address, 116);
+    const { prefix, words } = bech32m.decode(address, 1023);
     if (prefix != hrp) throw new Error('Invalid prefix!');
 
     const version = words.shift();

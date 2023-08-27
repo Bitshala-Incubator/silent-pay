@@ -4,9 +4,9 @@ import {
     decodeSilentPaymentAddress,
     deriveSilentPaymentsKeyPair,
     encodeSilentPaymentAddress,
-} from './silent-pay';
+} from './encoding';
 
-describe('SilentPay', () => {
+describe('Encoding', () => {
     it('should derive scan and spend key from master key', () => {
         const master = HDPrivateKey.generate();
         const { scanKey, spendKey } = deriveSilentPaymentsKeyPair(master);

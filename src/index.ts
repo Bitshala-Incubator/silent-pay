@@ -2,4 +2,4 @@ export {
     deriveSilentPaymentsKeyPair,
     decodeSilentPaymentAddress,
     encodeSilentPaymentAddress,
-} from './silent-pay.ts';
+} from './encoding.ts';
