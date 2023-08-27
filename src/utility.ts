@@ -1,6 +1,19 @@
 import { Outpoint as BcoinOutpoint } from 'bcoin/dist/primitives';
 import { Outpoint, PrivateKey } from './interface';
 import { SHA256, secp256k1 } from 'bcrypto';
+import HDPrivateKey from 'bcoin/dist/hd/private';
+
+export const deriveSilentPaymentsKeyPair = (
+    master: HDPrivateKey,
+): { scanKey: HDPrivateKey; spendKey: HDPrivateKey } => {
+    if (master.depth != 0 || master.parentFingerPrint != 0)
+        throw new Error('Bad master key!');
+
+    return {
+        scanKey: master.derivePath('m/352h/0h/0h/1h/0'),
+        spendKey: master.derivePath('m/352h/0h/0h/0h/0'),
+    };
+};
 
 export const hashOutpoints = (outpoints: Outpoint[]): Buffer => {
     const bcoinOutpoints = Buffer.concat(

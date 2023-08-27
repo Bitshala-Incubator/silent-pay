@@ -1,18 +1,5 @@
-import HDPrivateKey from 'bcoin/dist/hd/private';
 import { bech32m } from 'bech32';
 import { secp256k1 } from 'bcrypto';
-
-export const deriveSilentPaymentsKeyPair = (
-    master: HDPrivateKey,
-): { scanKey: HDPrivateKey; spendKey: HDPrivateKey } => {
-    if (master.depth != 0 || master.parentFingerPrint != 0)
-        throw new Error('Bad master key!');
-
-    return {
-        scanKey: master.derivePath('m/352h/0h/0h/1h/0'),
-        spendKey: master.derivePath('m/352h/0h/0h/0h/0'),
-    };
-};
 
 export const encodeSilentPaymentAddress = (
     scanKey: Buffer,
