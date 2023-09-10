@@ -17,3 +17,5 @@ export type Output = {
     pubkey: Buffer;
     value: number;
 };
+
+export type LabelMap = { [key: string]: string };
