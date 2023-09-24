@@ -1,9 +1,9 @@
 import { bech32m } from 'bech32';
-import { secp256k1 } from 'bcrypto';
+import secp256k1 from 'secp256k1';
 
 export const encodeSilentPaymentAddress = (
-    scanKey: Buffer,
-    spendKey: Buffer,
+    scanKey: Uint8Array,
+    spendKey: Uint8Array,
     hrp: string = 'tsp',
     version: number = 0,
 ): string => {
@@ -32,8 +32,8 @@ export const decodeSilentPaymentAddress = (
 };
 
 export const createLabeledSilentPaymentAddress = (
-    scanKey: Buffer,
-    spendKey: Buffer,
+    scanKey: Uint8Array,
+    spendKey: Uint8Array,
     m: Buffer,
     hrp: string = 'tsp',
     version: number = 0,

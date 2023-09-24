@@ -1,24 +1,25 @@
-import { secp256k1, SHA256 } from 'bcrypto';
 import { serialiseUint32 } from './utility.ts';
 import { LabelMap } from './interface.ts';
+import secp256k1 from 'secp256k1';
+import { createHash } from 'crypto';
 
 // Handle additional label-related logic
 const handleLabels = (
     output: Buffer,
-    tweakedPublicKey: Buffer,
+    tweakedPublicKey: Uint8Array,
     tweak: Buffer,
     labels: LabelMap,
-): Buffer | null => {
+): Uint8Array | null => {
     const negatedPublicKey = secp256k1.publicKeyNegate(tweakedPublicKey, true);
 
     let mG = secp256k1.publicKeyCombine([output, negatedPublicKey], true);
-    let labelHex = labels[mG.toString('hex')];
+    let labelHex = labels[Buffer.from(mG).toString('hex')];
     if (!labelHex) {
         mG = secp256k1.publicKeyCombine(
             [secp256k1.publicKeyNegate(output, true), negatedPublicKey],
             true,
         );
-        labelHex = labels[mG.toString('hex')];
+        labelHex = labels[Buffer.from(mG).toString('hex')];
     }
 
     if (labelHex) {
@@ -60,7 +61,10 @@ const processTweak = (
                 labels,
             );
             if (privateKeyTweak) {
-                matches.set(output.toString('hex'), privateKeyTweak);
+                matches.set(
+                    output.toString('hex'),
+                    Buffer.from(privateKeyTweak),
+                );
                 return 1; // Increment counter
             }
         }
@@ -89,9 +93,9 @@ export const scanOutputs = (
     let counterIncrement = 0;
 
     do {
-        const tweak = SHA256.digest(
-            Buffer.concat([ecdhSecret, serialiseUint32(n)]),
-        );
+        const tweak = createHash('sha256')
+            .update(Buffer.concat([ecdhSecret, serialiseUint32(n)]))
+            .digest();
         counterIncrement = processTweak(
             spendPublicKey,
             tweak,

@@ -1,33 +1,20 @@
-import { Outpoint as BcoinOutpoint } from 'bcoin/dist/primitives';
 import { Outpoint, PrivateKey } from './interface';
-import { SHA256, secp256k1 } from 'bcrypto';
-import HDPrivateKey from 'bcoin/dist/hd/private';
-
-export const deriveSilentPaymentsKeyPair = (
-    master: HDPrivateKey,
-): { scanKey: HDPrivateKey; spendKey: HDPrivateKey } => {
-    if (master.depth != 0 || master.parentFingerPrint != 0)
-        throw new Error('Bad master key!');
-
-    return {
-        scanKey: master.derivePath('m/352h/0h/0h/1h/0'),
-        spendKey: master.derivePath('m/352h/0h/0h/0h/0'),
-    };
-};
+import secp256k1 from 'secp256k1';
+import { createHash } from 'crypto';
 
 export const hashOutpoints = (outpoints: Outpoint[]): Buffer => {
-    const bcoinOutpoints = Buffer.concat(
+    const outpointBuffer = Buffer.concat(
         outpoints
             .map((outpoint) =>
-                BcoinOutpoint.fromJSON({
-                    hash: outpoint.txid,
-                    index: outpoint.vout,
-                }).toRaw(),
+                Buffer.concat([
+                    Buffer.from(outpoint.txid, 'hex').reverse(),
+                    serialiseUint32LE(outpoint.vout),
+                ]),
             )
             .sort((a, b) => a.compare(b)),
     );
 
-    return SHA256.digest(bcoinOutpoints);
+    return createHash('sha256').update(outpointBuffer).digest();
 };
 
 export const calculateSumOfPrivateKeys = (keys: PrivateKey[]): Buffer => {
@@ -42,13 +29,21 @@ export const calculateSumOfPrivateKeys = (keys: PrivateKey[]): Buffer => {
         return privateKey;
     });
 
-    return negatedKeys.slice(1).reduce((acc, key) => {
-        return secp256k1.privateKeyTweakAdd(acc, key);
-    }, negatedKeys[0]);
+    return Buffer.from(
+        negatedKeys.slice(1).reduce((acc, key) => {
+            return secp256k1.privateKeyTweakAdd(acc, key);
+        }, negatedKeys[0]),
+    );
 };
 
 export const serialiseUint32 = (n: number): Buffer => {
     const buf = Buffer.alloc(4);
     buf.writeUInt32BE(n);
+    return buf;
+};
+
+const serialiseUint32LE = (n: number): Buffer => {
+    const buf = Buffer.alloc(4);
+    buf.writeUInt32LE(n);
     return buf;
 };
