@@ -1,24 +1,7 @@
 import { Outpoint, PrivateKey } from './interface';
 import { calculateSumOfPrivateKeys, hashOutpoints } from './utility';
-import HDPrivateKey from 'bcoin/dist/hd/private';
-import { deriveSilentPaymentsKeyPair } from './utility';
 
 describe('Utility', () => {
-    it('should derive scan and spend key from master key', () => {
-        const master = HDPrivateKey.generate();
-        const { scanKey, spendKey } = deriveSilentPaymentsKeyPair(master);
-
-        expect(scanKey).toStrictEqual(master.derivePath('m/352h/0h/0h/1h/0'));
-        expect(spendKey).toStrictEqual(master.derivePath('m/352h/0h/0h/0h/0'));
-    });
-
-    it('should fail to derive scan and spend key if master key is not provided', () => {
-        const master = HDPrivateKey.generate().derivePath('m/0h/0h');
-        expect(() => deriveSilentPaymentsKeyPair(master)).toThrow(
-            'Bad master key!',
-        );
-    });
-
     it.each([
         {
             outpoints: [

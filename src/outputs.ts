@@ -5,7 +5,8 @@ import {
     serialiseUint32,
 } from './utility.ts';
 import { decodeSilentPaymentAddress } from './encoding.ts';
-import { SHA256, secp256k1 } from 'bcrypto';
+import secp256k1 from 'secp256k1';
+import { createHash } from 'crypto';
 
 export const createOutputs = (
     inputPrivateKeys: PrivateKey[],
@@ -35,17 +36,16 @@ export const createOutputs = (
     const outputs: Output[] = [];
     for (const [scanKeyHex, paymentGroup] of paymentGroups.entries()) {
         const scanKey = Buffer.from(scanKeyHex, 'hex');
-        const ecdhSecret = secp256k1.derive(
+        const ecdhSecret = secp256k1.publicKeyTweakMul(
             secp256k1.publicKeyTweakMul(scanKey, outpointHash, true),
             sumOfPrivateKeys,
-            true,
         );
 
         let n = 0;
         for (const { spendKey, amount } of paymentGroup) {
-            const tweak = SHA256.digest(
-                Buffer.concat([ecdhSecret, serialiseUint32(n)]),
-            );
+            const tweak = createHash('sha256')
+                .update(Buffer.concat([ecdhSecret, serialiseUint32(n)]))
+                .digest();
 
             const publicKey = secp256k1.publicKeyTweakAdd(
                 spendKey,
@@ -54,7 +54,7 @@ export const createOutputs = (
             );
 
             outputs.push({
-                pubkey: publicKey,
+                pubkey: Buffer.from(publicKey),
                 value: amount,
             });
             n++;
