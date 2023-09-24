@@ -40,13 +40,13 @@
     "types:check": "tsc --noemit"
   },
   "dependencies": {
-    "bcoin": "github:Bitshala-Incubator/bcoin#0ea052082462a98c9d2b023270cb7af31adc1845",
-    "bcrypto": "github:Bitshala-Incubator/bcrypto#7009d13b8ee1f66fbc87c9344b9f36b3c4a73f38",
-    "bech32": "^2.0.0"
+    "bech32": "^2.0.0",
+    "secp256k1": "^5.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "@types/node": "^20.5.0",
+    "@types/secp256k1": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
     "eslint": "^8.40.0",
