@@ -1,6 +1,6 @@
 import { Outpoint, PrivateKey } from './interface';
 import secp256k1 from 'secp256k1';
-import { createHash } from 'crypto';
+import createHash from 'create-hash';
 
 export const hashOutpoints = (outpoints: Outpoint[]): Buffer => {
     const outpointBuffer = Buffer.concat(

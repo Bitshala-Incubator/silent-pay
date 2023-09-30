@@ -1,7 +1,7 @@
 import { serialiseUint32 } from './utility.ts';
 import { LabelMap } from './interface.ts';
 import secp256k1 from 'secp256k1';
-import { createHash } from 'crypto';
+import createHash from 'create-hash';
 
 // Handle additional label-related logic
 const handleLabels = (
