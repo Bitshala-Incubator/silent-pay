@@ -1,5 +1,6 @@
 import { bech32m } from 'bech32';
 import secp256k1 from 'secp256k1';
+import { Buffer } from 'buffer';
 
 export const encodeSilentPaymentAddress = (
     scanKey: Uint8Array,

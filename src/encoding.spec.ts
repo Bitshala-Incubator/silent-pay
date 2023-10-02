@@ -3,6 +3,7 @@ import {
     decodeSilentPaymentAddress,
     encodeSilentPaymentAddress,
 } from './encoding';
+import { Buffer } from 'buffer';
 
 describe('Encoding', () => {
     describe.each([
