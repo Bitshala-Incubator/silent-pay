@@ -7,6 +7,7 @@ import {
 import { decodeSilentPaymentAddress } from './encoding.ts';
 import secp256k1 from 'secp256k1';
 import createHash from 'create-hash';
+import { Buffer } from 'buffer';
 
 export const createOutputs = (
     inputPrivateKeys: PrivateKey[],

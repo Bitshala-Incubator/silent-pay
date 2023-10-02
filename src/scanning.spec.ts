@@ -1,5 +1,6 @@
 import { scanOutputs } from './scanning';
 import { LabelMap } from './interface';
+import { Buffer } from 'buffer';
 
 describe('Scanning', () => {
     it.each([
