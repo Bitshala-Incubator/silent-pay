@@ -3,7 +3,7 @@ module.exports = {
     verbose: true,
     testEnvironment: 'node',
     rootDir: '.',
-    roots: ['<rootDir>/src/'],
+    roots: ['<rootDir>/test/'],
     testRegex: '.*\\.spec\\.ts$',
     transform: {
         '^.+\\.(t|j)s$': 'ts-jest',
