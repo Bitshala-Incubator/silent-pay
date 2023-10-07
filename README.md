@@ -1,5 +1,11 @@
 # SilentPay - a TS library for silent payments
 
+[![Github CI](https://github.com/Bitshala-Incubator/silent-pay/actions/workflows/test.yml/badge.svg)](https://github.com/Bitshala-Incubator/silent-pay/actions/workflows/test.yml) [![Github CI](https://github.com/Bitshala-Incubator/silent-pay/actions/workflows/lint.yml/badge.svg)](https://github.com/Bitshala-Incubator/silent-pay/actions/workflows/lint.yml) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
+A silent payments javascript Bitcoin library for node.js and browsers. Written in TypeScript, but committing the JS files to verify.
+
+Released under the terms of the [MIT LICENSE](LICENSE).
+
 ---
 
 ## Experimental Warning
