@@ -55,7 +55,7 @@ export const createOutputs = (
             );
 
             outputs.push({
-                pubkey: Buffer.from(publicKey),
+                script: Buffer.from(publicKey),
                 value: amount,
             });
             n++;

@@ -20,7 +20,7 @@ describe('Outputs', () => {
             expect(
                 outputs
                     .map((output) => ({
-                        pubkey: output.pubkey.toString('hex'),
+                        pubkey: output.script.toString('hex'),
                         value: output.value,
                     }))
                     .sort((a, b) => a.pubkey.localeCompare(b.pubkey)),
