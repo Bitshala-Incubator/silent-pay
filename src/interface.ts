@@ -14,7 +14,7 @@ export type RecipientAddress = {
 };
 
 export type Output = {
-    pubkey: Buffer;
+    script: Buffer;
     value: number;
 };
 
