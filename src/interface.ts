@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 export type Outpoint = {
     txid: string;
     vout: number;
@@ -19,3 +21,11 @@ export type Output = {
 };
 
 export type LabelMap = { [key: string]: string };
+
+export type Input = {
+    hash: Buffer;
+    index: number;
+    script: Buffer;
+    sequence: number;
+    witness: Buffer[];
+};
