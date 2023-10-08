@@ -48,3 +48,24 @@ const serialiseUint32LE = (n: number): Buffer => {
     buf.writeUInt32LE(n);
     return buf;
 };
+
+export const readVarInt = (buffer: Buffer, offset: number = 0): number => {
+    const first = buffer.readUInt8(offset);
+
+    // 8 bit
+    if (first < 0xfd) return first;
+    // 16 bit
+    else if (first === 0xfd) return buffer.readUInt16LE(offset + 1);
+    // 32 bit
+    else if (first === 0xfe) return buffer.readUInt32LE(offset + 1);
+    // 64 bit
+    else {
+        const lo = buffer.readUInt32LE(offset + 1);
+        const hi = buffer.readUInt32LE(offset + 5);
+        return hi * 0x0100000000 + lo;
+    }
+};
+
+export const encodingLength = (n: number) => {
+    return n < 0xfd ? 1 : n <= 0xffff ? 3 : n <= 0xffffffff ? 5 : 9;
+};
