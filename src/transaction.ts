@@ -93,4 +93,37 @@ export class Transaction {
     static fromHex(hex: string): Transaction {
         return Transaction.fromBuffer(Buffer.from(hex, 'hex'));
     }
+
+    getPublicKeyFromOutput(index: number): Buffer | null {
+        const output = this.outputs[index];
+
+        // taproot
+        if (
+            output.script.length === 34 &&
+            output.script[0] === 0x51 &&
+            output.script[1] === 0x20
+        ) {
+            return output.script.subarray(2, 34);
+        }
+
+        // p2pk uncompressed
+        if (
+            output.script.length === 67 &&
+            output.script[0] === 0x41 &&
+            output.script[66] === 0xac
+        ) {
+            return output.script.subarray(1, 66);
+        }
+
+        // p2pk compressed
+        if (
+            output.script.length === 35 &&
+            output.script[0] === 0x21 &&
+            output.script[34] === 0xac
+        ) {
+            return output.script.subarray(1, 34);
+        }
+
+        return null;
+    }
 }
