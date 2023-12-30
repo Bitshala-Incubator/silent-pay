@@ -1,5 +1,5 @@
-import { scanOutputs } from '../src';
-import { LabelMap } from '../src/interface';
+import { scanOutputs } from '../src/core';
+import { LabelMap } from '../src/core/interface';
 import { Buffer } from 'buffer';
 import { testData } from './fixtures/scanning';
 
