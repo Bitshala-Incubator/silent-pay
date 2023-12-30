@@ -1,5 +1,9 @@
-import { Outpoint, PrivateKey } from '../src/core/interface';
-import { calculateSumOfPrivateKeys, hashOutpoints } from '../src/core';
+import {
+    calculateSumOfPrivateKeys,
+    hashOutpoints,
+    Outpoint,
+    PrivateKey,
+} from '../src/core';
 import { inputPrivateKeys, outpoints } from './fixtures/utility';
 
 describe('Utility', () => {
