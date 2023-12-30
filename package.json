@@ -40,6 +40,7 @@
     "types:check": "tsc --noemit"
   },
   "dependencies": {
+    "axios": "^1.6.3",
     "bech32": "^2.0.0",
     "buffer": "^6.0.3",
     "create-hash": "^1.2.0",
