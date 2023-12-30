@@ -1,5 +1,5 @@
-import { Outpoint, PrivateKey, RecipientAddress } from '../src/interface';
-import { createOutputs } from '../src';
+import { Outpoint, PrivateKey, RecipientAddress } from '../src/core/interface';
+import { createOutputs } from '../src/core';
 import { testData } from './fixtures/outputs';
 
 describe('Outputs', () => {
