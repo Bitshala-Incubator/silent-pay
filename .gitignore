@@ -22,3 +22,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# test
+test/wallet-db
