@@ -42,10 +42,16 @@
   "dependencies": {
     "axios": "^1.6.3",
     "bech32": "^2.0.0",
+    "bip32": "^4.0.0",
+    "bip38": "^3.1.1",
+    "bip39": "^3.1.0",
+    "bitcoinjs-lib": "^6.1.5",
     "buffer": "^6.0.3",
     "create-hash": "^1.2.0",
+    "ecpair": "^2.1.0",
     "level": "^8.0.0",
-    "secp256k1": "^5.0.0"
+    "secp256k1": "^5.0.0",
+    "tiny-secp256k1": "^2.2.3"
   },
   "devDependencies": {
     "@types/create-hash": "^1.2.3",
