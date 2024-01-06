@@ -1,4 +1,5 @@
 import { WalletDB } from '../src/wallet';
+import fs from 'fs';
 
 describe('Wallet DB', () => {
     let walletDB: WalletDB;
@@ -25,5 +26,6 @@ describe('Wallet DB', () => {
 
     afterAll(async () => {
         await walletDB.close();
+        fs.rmSync('./test/wallet-db', { recursive: true, force: true });
     });
 });

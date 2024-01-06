@@ -5,9 +5,9 @@ describe('EsploraClient', () => {
 
     beforeAll(() => {
         client = new EsploraClient({
-            protocol: 'https',
-            host: 'blockstream.info',
-            network: 'testnet',
+            protocol: 'http',
+            host: '127.0.0.1:8094',
+            network: 'regtest',
         });
     });
 
