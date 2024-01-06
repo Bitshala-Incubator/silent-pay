@@ -48,28 +48,28 @@ export class Wallet {
         await this.db.close();
     }
 
-    private deriveAddress(path: string): string {
+    private async deriveAddress(path: string): Promise<string> {
         const child = this.masterKey.derivePath(path);
         const { address } = payments.p2wpkh({
             pubkey: child.publicKey,
             network: this.network.network,
         });
 
+        await this.db.saveAddress(address, path);
+
         return address;
     }
 
     async deriveReceiveAddress(): Promise<string> {
         const path = `m/84'/0'/0'/0/${this.receiveDepth}`;
-        const address = this.deriveAddress(path);
-        await this.db.saveAddress(address, path);
+        const address = await this.deriveAddress(path);
         this.receiveDepth++;
         return address;
     }
 
     async deriveChangeAddress(): Promise<string> {
         const path = `m/84'/0'/0'/1/${this.changeDepth}`;
-        const address = this.deriveAddress(path);
-        await this.db.saveAddress(address, path);
+        const address = await this.deriveAddress(path);
         this.changeDepth++;
         return address;
     }
