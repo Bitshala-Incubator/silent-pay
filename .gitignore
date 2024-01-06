@@ -25,3 +25,4 @@ coverage
 
 # test
 test/wallet-db
+test/wallet
