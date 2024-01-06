@@ -1,6 +1,8 @@
 import { NetworkInterface } from './network.interface.ts';
 import { URL } from 'url';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { Network } from 'bitcoinjs-lib';
+import { regtest, testnet, bitcoin } from 'bitcoinjs-lib/src/networks';
 
 export type EsploraConfigOptions = {
     network: 'testnet' | 'main' | 'regtest';
@@ -10,6 +12,7 @@ export type EsploraConfigOptions = {
 
 export class EsploraClient implements NetworkInterface {
     private readonly url: string;
+    private readonly _network: string;
 
     constructor(config: EsploraConfigOptions) {
         let pathPrefix;
@@ -24,9 +27,22 @@ export class EsploraClient implements NetworkInterface {
             default:
                 pathPrefix = '/api';
         }
+        this._network = config.network;
         this.url = new URL(
             `${config.protocol}://${config.host}${pathPrefix}`,
         ).toString();
+    }
+
+    get network(): Network {
+        switch (this._network) {
+            case 'testnet':
+                return testnet;
+            case 'regtest':
+                return regtest;
+            case 'main':
+            default:
+                return bitcoin;
+        }
     }
 
     private async request(config: AxiosRequestConfig) {
