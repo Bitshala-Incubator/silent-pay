@@ -1,0 +1,36 @@
+services:
+  bitcoin:
+    image: btcpayserver/bitcoin:24.0.1-1
+    environment:
+      BITCOIN_NETWORK: regtest
+      BITCOIN_EXTRA_ARGS: |
+        server=1
+        rest=1
+        rpcbind=0.0.0.0:18443
+        rpcallowip=0.0.0.0/0
+        rpcauth=alice:88cae77e34048eff8b9f0be35527dd91$$d5c4e7ff4dfe771808e9c00a1393b90d498f54dcab0ee74a2d77bd01230cd4cc
+        debug=1
+        logips=1
+        logtimemicros=1
+        blockmintxfee=0
+        deprecatedrpc=signrawtransaction
+        listenonion=0
+        fallbackfee=0.00001
+        txindex=1
+    ports:
+      - "18443:18443"
+  esplora:
+    image: blockstream/esplora:5ec810278c737c78ed54e82749581f1a52ce1b54
+    environment:
+      ELECTRS_ARGS: --jsonrpc-import --daemon-rpc-addr bitcoin:18443 --cookie alice:password
+    ports:
+      - "50001:50001"
+      - "8094:80"
+    command:
+      bash -c "/srv/explorer/run.sh bitcoin-regtest explorer"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 40s

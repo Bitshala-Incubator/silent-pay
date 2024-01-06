@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Start test containers
+        run: docker-compose -f "./test/helpers/docker-compose.yaml" up -d
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -24,5 +26,21 @@ jobs:
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm install
+      - name: Mine 10 blocks
+        run: |
+          curl --header "Content-Type: application/json" -X POST http://alice:password@localhost:18443 -d '{"method": "generatetoaddress", "params": [10, "bcrt1qq2yshcmzdlznnpxx258xswqlmqcxjs4dssfxt2"]}'
+      - name: Wait for esplora to become available
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 3
+          retry_wait_seconds: 15
+          max_attempts: 15
+          command: curl --fail -X GET http://localhost:8094/regtest/api/blocks/tip/height
       - name: Run unit tests
         run: npm run test
+      - name: Fetch esplora logs
+        if: always()
+        run: docker-compose -f "./test/helpers/docker-compose.yaml" logs esplora
+      - name: Stop test containers
+        if: always()
+        run: docker-compose -f "./test/helpers/docker-compose.yaml" down
