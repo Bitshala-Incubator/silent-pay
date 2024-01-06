@@ -1,6 +1,7 @@
 import { Level } from 'level';
 import { wdb } from './layout.ts';
 import { DbInterface } from '../db.interface.ts';
+import { Buffer } from 'buffer';
 
 export type LevelDBConfigOptions = {
     location: string;
@@ -37,12 +38,25 @@ export class WalletDB implements DbInterface {
         await this.db.put(wdb.V, version.toString());
     }
 
-    public async getSeed(): Promise<string> {
-        return await this.db.get(wdb.M);
+    public async getMasterKey(): Promise<{
+        privateKey: Buffer;
+        chaincode: Buffer;
+    }> {
+        const masterKey = await this.db.get(wdb.M);
+        const privateKey = Buffer.from(masterKey.slice(0, 64), 'hex');
+        const chaincode = Buffer.from(masterKey.slice(64), 'hex');
+
+        return { privateKey, chaincode };
     }
 
-    public async setSeed(set: string): Promise<void> {
-        await this.db.put(wdb.M, set);
+    public async setMasterKey(
+        privateKey: Buffer,
+        chaincode: Buffer,
+    ): Promise<void> {
+        await this.db.put(
+            wdb.M,
+            Buffer.concat([privateKey, chaincode]).toString('hex'),
+        );
     }
 
     public async saveAddress(address: string, path: string): Promise<void> {

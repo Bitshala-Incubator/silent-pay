@@ -2,8 +2,9 @@ import { DbInterface } from './db';
 import { NetworkInterface } from './network';
 import { mnemonicToSeedSync } from 'bip39';
 import { payments } from 'bitcoinjs-lib';
-import BIP32Factory from 'bip32';
+import BIP32Factory, { BIP32Interface } from 'bip32';
 import * as ecc from 'tiny-secp256k1';
+import { Buffer } from 'buffer';
 
 const bip32 = BIP32Factory(ecc);
 
@@ -15,20 +16,29 @@ export type WalletConfigOptions = {
 export class Wallet {
     private readonly db: DbInterface;
     private readonly network: NetworkInterface;
-    private seed: string;
+    private masterKey: BIP32Interface;
     private receiveDepth: number = 0;
     private changeDepth: number = 0;
 
     constructor(config: WalletConfigOptions) {
         this.db = config.db;
         this.network = config.networkClient;
-        this.seed = mnemonicToSeedSync(
-            'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
-        ).toString('hex');
     }
 
-    async init() {
+    async init(mnemonic?: string) {
         await this.db.open();
+
+        if (mnemonic) {
+            const seed = mnemonicToSeedSync(mnemonic).toString('hex');
+            this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
+            await this.db.setMasterKey(
+                this.masterKey.privateKey,
+                this.masterKey.chainCode,
+            );
+        } else {
+            const { privateKey, chaincode } = await this.db.getMasterKey();
+            this.masterKey = bip32.fromPrivateKey(privateKey, chaincode);
+        }
     }
 
     async close() {
@@ -38,24 +48,14 @@ export class Wallet {
         await this.db.close();
     }
 
-    async load(mnemonic?: string) {
-        if (mnemonic) {
-            this.seed = mnemonicToSeedSync(mnemonic).toString('hex');
-            await this.db.setSeed(this.seed);
-        } else {
-            this.seed = await this.db.getSeed();
-        }
-    }
-
     private deriveAddress(path: string): string {
-        const master = bip32.fromSeed(Buffer.from(this.seed, 'hex'));
-        const child = master.derivePath(path);
+        const child = this.masterKey.derivePath(path);
         const { address } = payments.p2wpkh({
             pubkey: child.publicKey,
             network: this.network.network,
         });
 
-        return address!;
+        return address;
     }
 
     async deriveReceiveAddress(): Promise<string> {

@@ -20,11 +20,7 @@ describe('Wallet', () => {
     });
 
     it('should initialise the wallet', async () => {
-        await wallet.init();
-    });
-
-    it('should load the wallet', async () => {
-        await wallet.load(
+        await wallet.init(
             'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
         );
     });
