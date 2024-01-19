@@ -21,11 +21,3 @@ By using this library, you acknowledge the following:
 4. **Security Considerations:** This library may contain security vulnerabilities or weaknesses that could expose your data or funds to risks. You are responsible for conducting your own security assessments and risk evaluations.
 5. **Limited Documentation:** The documentation for this library may be incomplete, inaccurate, or outdated.
 6. **API and Compatibility Changes:** This library is subject to frequent changes, including modifications to its API, features, or compatibility with other software. These changes may affect your ability to use the library effectively.
-
-## Roadmap
-
-- [x] Basic implementation of creating silent payment outputs
-- [x] Basic implementation of scanning silent payment outputs
-  - [x] Simple scan function to perform scanning when all necessary data is available
-  - [ ] Add functions to transactions class that extract public keys from tx inputs and outputs
-- [ ] Consolidate all files in `src` folder into `src/core` folder and create `src/wallet` folder to include all wallet functionality
