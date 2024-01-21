@@ -2,6 +2,7 @@ import { Level } from 'level';
 import { wdb } from './layout.ts';
 import { DbInterface } from '../db.interface.ts';
 import { Buffer } from 'buffer';
+import { Coin } from '../../coin.ts';
 
 export type LevelDBConfigOptions = {
     location: string;
@@ -85,5 +86,18 @@ export class WalletDB implements DbInterface {
 
     async setChangeDepth(depth: number): Promise<void> {
         await this.db.sublevel(wdb.A).put('changeDepth', depth.toString());
+    }
+
+    async getAllAddresses(): Promise<string[]> {
+        return await this.db.sublevel(wdb.A).keys().all();
+    }
+
+    async saveUnspentCoins(coins: Coin[]): Promise<void> {
+        await this.db.sublevel(wdb.C).put('unspent', JSON.stringify(coins));
+    }
+
+    async getUnspentCoins(): Promise<Coin[]> {
+        const coins = JSON.parse(await this.db.sublevel(wdb.C).get('unspent'));
+        return coins.map((coin: string) => Coin.fromJSON(coin));
     }
 }

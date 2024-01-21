@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import { Coin } from '../coin.ts';
 
 export type DbInterface = {
     open(): Promise<void>;
@@ -15,4 +16,7 @@ export type DbInterface = {
     setReceiveDepth(depth: number): Promise<void>;
     getChangeDepth(): Promise<number>;
     setChangeDepth(depth: number): Promise<void>;
+    getAllAddresses(): Promise<string[]>;
+    saveUnspentCoins(coins: Coin[]): Promise<void>;
+    getUnspentCoins(): Promise<Coin[]>;
 };

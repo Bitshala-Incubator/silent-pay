@@ -73,4 +73,20 @@ export class Wallet {
         this.changeDepth++;
         return address;
     }
+
+    async scan() {
+        const addresses = await this.db.getAllAddresses();
+        const coins = (
+            await Promise.all(
+                addresses.map((address) => this.network.getUTXOs(address)),
+            )
+        ).reduce((acc, utxos) => [...acc, ...utxos], []);
+
+        await this.db.saveUnspentCoins(coins);
+    }
+
+    async getBalance(): Promise<number> {
+        const coins = await this.db.getUnspentCoins();
+        return coins.reduce((acc, coin) => acc + coin.value, 0);
+    }
 }

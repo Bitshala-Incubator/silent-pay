@@ -3,6 +3,7 @@ import { URL } from 'url';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { Network } from 'bitcoinjs-lib';
 import { regtest, testnet, bitcoin } from 'bitcoinjs-lib/src/networks';
+import { Coin } from '../coin.ts';
 
 export type EsploraConfigOptions = {
     network: 'testnet' | 'main' | 'regtest';
@@ -81,5 +82,14 @@ export class EsploraClient implements NetworkInterface {
             method: 'GET',
             url: `${this.url}//block-height/${height}`,
         });
+    }
+
+    async getUTXOs(address: string): Promise<Coin[]> {
+        return (
+            await this.request({
+                method: 'GET',
+                url: `${this.url}/address/${address}/utxo`,
+            })
+        ).map((utxo: object) => new Coin({ ...utxo, address }));
     }
 }
