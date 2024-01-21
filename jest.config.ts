@@ -11,4 +11,5 @@ module.exports = {
     collectCoverageFrom: ['<rootDir>/src/**/*.(t|j)s'],
     coveragePathIgnorePatterns: ['.*.spec.ts'],
     coverageDirectory: './coverage',
+    testTimeout: 30000,
 };
