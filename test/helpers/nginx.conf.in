@@ -1,0 +1,112 @@
+geo $limit {
+    default 1;
+    34.70.28.228/32 0;
+    127.0.0.1/32 0;
+}
+
+map $limit $limit_key {
+    0 "";
+    1 $http_x_forwarded_for;
+}
+
+limit_req_status 429;
+limit_conn_status 429;
+
+upstream backend {
+    server unix:/var/electrs-rest.sock;
+    keepalive 300;
+}
+
+upstream prerenderer {
+    server unix:/var/prerender-http.sock;
+    keepalive 300;
+}
+
+upstream electrum_websocket {
+    server unix:/var/electrum-websocket.sock;
+    keepalive 300;
+}
+
+server {
+    listen 80;
+    keepalive_requests 100000;
+    gzip on;
+    gzip_types application/json text/plain application/xml application/javascript;
+    gzip_proxied any;
+    gzip_vary on;
+    root {STATIC_DIR};
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 650s;
+    {NGINX_LOGGING};
+    server_tokens off;
+
+    # client timeouts
+    client_body_timeout 5s;
+    client_header_timeout 5s;
+
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Content-Security-Policy "{NGINX_CSP}" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+
+    location /{NGINX_PATH}api/ {
+        proxy_pass http://backend/;
+        add_header Access-Control-Allow-Origin * always;
+        add_header Access-Control-Expose-Headers 'x-total-results';
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+    location /{NGINX_PATH}nojs/ {
+        proxy_pass http://prerenderer/;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+    location /{NGINX_PATH}electrum-websocket/ {
+        client_body_timeout 60s;
+        proxy_pass http://electrum_websocket/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 1d;
+        proxy_send_timeout 1d;
+    }
+
+    location = /{NGINX_PATH}nojs {
+        return 301 " /{NGINX_PATH}nojs/";
+    }
+    location ~ ^/{NGINX_PATH}((tx|block|block-height|address|assets?)/|[a-zA-Z0-9]+$) {
+        expires 60m;
+        if ($args = "nojs") {
+            {NGINX_REWRITE_NOJS};
+        }
+        try_files $uri /index.html;
+    }
+    location /{NGINX_PATH} {
+        expires 60m;
+        if ($args = "nojs") {
+            {NGINX_REWRITE_NOJS};
+        }
+        {NGINX_REWRITE}
+    }
+    location = /{NGINX_NOSLASH_PATH} {
+        if ($args = "nojs") {
+            {NGINX_REWRITE_NOJS};
+        }
+        return 301 " /{NGINX_PATH}";
+    }
+    error_page 404 /{NGINX_PATH}notfound.html;
+    location = /notfound.html {
+        internal;
+    }
+    location /{NGINX_PATH}api/fee-estimates {
+        return 200 '{"1": 1.0, "3": 1.0, "6": 1.0}';
+        add_header Access-Control-Allow-Origin * always;
+        add_header Access-Control-Expose-Headers 'x-total-results';
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+}

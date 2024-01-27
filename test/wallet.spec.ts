@@ -76,6 +76,19 @@ describe('Wallet', () => {
         expect(await wallet.getBalance()).toBe(10000000);
     });
 
+    it('should send a payment to an address', async () => {
+        const txid = await wallet.send(
+            await bitcoinRpcClient.getNewAddress(),
+            5000000,
+        );
+
+        expect(txid).toBeDefined();
+
+        // get the transaction from the node and check it has been broadcasted
+        const tx = await bitcoinRpcClient.getMempoolEntry(txid);
+        expect(tx).toBeDefined();
+    });
+
     afterAll(async () => {
         await wallet.close();
         fs.rmSync('./test/wallet', { recursive: true, force: true });

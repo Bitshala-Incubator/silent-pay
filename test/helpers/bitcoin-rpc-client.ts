@@ -22,12 +22,7 @@ export class BitcoinRpcClient {
         try {
             await this.createWallet('default');
         } catch (e) {
-            if (
-                e instanceof AxiosError &&
-                e.response?.data.error.message.includes(
-                    'Database already exists.',
-                )
-            ) {
+            if ((e as Error).message.includes('Database already exists.')) {
                 loadWallet = true;
             } else {
                 throw e;
@@ -39,10 +34,7 @@ export class BitcoinRpcClient {
                 loadWallet = false;
             }
         } catch (e) {
-            if (
-                e instanceof AxiosError &&
-                !e.response?.data.error.message.includes('No wallet is loaded.')
-            ) {
+            if (!(e as Error).message.includes('No wallet is loaded.')) {
                 throw e;
             }
         }
@@ -54,8 +46,7 @@ export class BitcoinRpcClient {
             }
         } catch (e) {
             if (
-                e instanceof AxiosError &&
-                !e.response?.data.error.message.includes(
+                !(e as Error).message.includes(
                     'Unable to obtain an exclusive lock on the database',
                 )
             ) {
@@ -74,8 +65,6 @@ export class BitcoinRpcClient {
         } catch (e) {
             if (e instanceof AxiosError) {
                 if (e.response?.data.error) {
-                    // eslint-disable-next-line no-console
-                    console.log(e.response.data);
                     throw new Error(e.response.data.error.message);
                 } else {
                     throw new Error(e.message);
@@ -142,6 +131,16 @@ export class BitcoinRpcClient {
             data: {
                 method: 'sendtoaddress',
                 params: [address, amount],
+            },
+        });
+    }
+
+    async getMempoolEntry(txid: string) {
+        return await this.request({
+            url: this.url,
+            data: {
+                method: 'getmempoolentry',
+                params: [txid],
             },
         });
     }
