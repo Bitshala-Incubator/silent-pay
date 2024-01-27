@@ -23,6 +23,8 @@ services:
     image: blockstream/esplora:5ec810278c737c78ed54e82749581f1a52ce1b54
     environment:
       ELECTRS_ARGS: --jsonrpc-import --daemon-rpc-addr bitcoin:18443 --cookie alice:password
+    volumes:
+      - ./nginx.conf.in:/srv/explorer/source/contrib/nginx.conf.in
     ports:
       - "50001:50001"
       - "8094:80"
