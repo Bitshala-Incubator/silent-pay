@@ -7,4 +7,6 @@ export type NetworkInterface = {
     getLatestBlockHash(): Promise<string>;
     getBlockHash(height: number): Promise<string>;
     getUTXOs(address: string): Promise<Coin[]>;
+    getFeeRate(): Promise<number>;
+    broadcast(tx: string): Promise<void>;
 };
