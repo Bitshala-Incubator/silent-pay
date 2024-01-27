@@ -92,4 +92,21 @@ export class EsploraClient implements NetworkInterface {
             })
         ).map((utxo: object) => new Coin({ ...utxo, address }));
     }
+
+    async getFeeRate(): Promise<number> {
+        return (
+            await this.request({
+                method: 'GET',
+                url: `${this.url}/fee-estimates`,
+            })
+        )[1];
+    }
+
+    async broadcast(txHex: string): Promise<void> {
+        await this.request({
+            method: 'POST',
+            url: `${this.url}/tx`,
+            data: txHex,
+        });
+    }
 }
