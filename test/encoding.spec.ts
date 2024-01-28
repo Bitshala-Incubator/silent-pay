@@ -13,15 +13,12 @@ describe('Encoding', () => {
                 encodeSilentPaymentAddress(
                     Buffer.from(data.scanKey, 'hex'),
                     Buffer.from(data.spendKey, 'hex'),
-                    'sp',
                 ),
             ).toBe(data.address);
         });
 
         it('should decode scan and spend key from silent payment address', () => {
-            expect(
-                decodeSilentPaymentAddress(data.address, 'sp'),
-            ).toStrictEqual({
+            expect(decodeSilentPaymentAddress(data.address)).toStrictEqual({
                 scanKey: Buffer.from(data.scanKey, 'hex'),
                 spendKey: Buffer.from(data.spendKey, 'hex'),
             });
@@ -36,7 +33,6 @@ describe('Encoding', () => {
                     Buffer.from(data.scanKey, 'hex'),
                     Buffer.from(data.spendKey, 'hex'),
                     Buffer.from(data.label, 'hex'),
-                    'sp',
                 ),
             ).toBe(data.address);
         },

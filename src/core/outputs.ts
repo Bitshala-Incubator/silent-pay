@@ -8,12 +8,14 @@ import { decodeSilentPaymentAddress } from './encoding.ts';
 import secp256k1 from 'secp256k1';
 import createHash from 'create-hash';
 import { Buffer } from 'buffer';
+import { bitcoin } from 'bitcoinjs-lib/src/networks';
+import { Network } from 'bitcoinjs-lib';
 
 export const createOutputs = (
     inputPrivateKeys: PrivateKey[],
     outpoints: Outpoint[],
     recipientAddresses: RecipientAddress[],
-    hrp: string = 'tsp',
+    network: Network = bitcoin,
 ): Output[] => {
     const sumOfPrivateKeys = calculateSumOfPrivateKeys(inputPrivateKeys);
     const outpointHash = hashOutpoints(outpoints);
@@ -24,7 +26,10 @@ export const createOutputs = (
     >();
 
     for (const { address, amount } of recipientAddresses) {
-        const { scanKey, spendKey } = decodeSilentPaymentAddress(address, hrp);
+        const { scanKey, spendKey } = decodeSilentPaymentAddress(
+            address,
+            network,
+        );
         if (paymentGroups.has(scanKey.toString('hex'))) {
             paymentGroups
                 .get(scanKey.toString('hex'))
