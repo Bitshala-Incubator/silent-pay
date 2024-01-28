@@ -13,7 +13,7 @@ export const encodeSilentPaymentAddress = (
     const data = bech32m.toWords(Buffer.concat([scanKey, spendKey]));
     data.unshift(version);
 
-    return bech32m.encode(hrpFromNetwork(network), data, 116);
+    return bech32m.encode(hrpFromNetwork(network), data, 1023);
 };
 
 export const decodeSilentPaymentAddress = (
