@@ -89,6 +89,38 @@ describe('Wallet', () => {
         expect(tx).toBeDefined();
     });
 
+    it('should confirm previous transaction, rescan and update wallet balance', async () => {
+        await bitcoinRpcClient.mineToAddress(
+            1,
+            await bitcoinRpcClient.getNewAddress(),
+        );
+
+        let retryCount = 5;
+        while (retryCount > 0) {
+            const balance = await wallet.getBalance();
+            if (balance === 10000000) {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await wallet.scan();
+            }
+            retryCount--;
+        }
+
+        expect(await wallet.getBalance()).toBeLessThan(5000000);
+    });
+
+    it('should send a payment to a sp address', async () => {
+        const txid = await wallet.sendToSilentAddress(
+            'tsp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqauj52ymtc4xdkmx3tgyhrsemg2g3303xk2gtzfy8h8ejet8fz8jc693hkx',
+            4000000,
+        );
+
+        expect(txid).toBeDefined();
+
+        // get the transaction from the node and check it has been broadcasted
+        const tx = await bitcoinRpcClient.getMempoolEntry(txid);
+        expect(tx).toBeDefined();
+    });
+
     afterAll(async () => {
         await wallet.close();
         fs.rmSync('./test/wallet', { recursive: true, force: true });
