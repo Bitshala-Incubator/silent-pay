@@ -19,7 +19,6 @@ describe('Outputs', () => {
                 data.privateKeys,
                 data.outpoints,
                 data.recipientAddresses,
-                'sp',
             );
             expect(
                 outputs
