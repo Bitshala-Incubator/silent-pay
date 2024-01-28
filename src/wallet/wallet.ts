@@ -1,15 +1,18 @@
 import { DbInterface } from './db';
 import { NetworkInterface } from './network';
 import { mnemonicToSeedSync } from 'bip39';
-import { payments, Psbt, Transaction } from 'bitcoinjs-lib';
+import { initEccLib, payments, Psbt, Transaction } from 'bitcoinjs-lib';
 import BIP32Factory, { BIP32Interface } from 'bip32';
 import * as ecc from 'tiny-secp256k1';
 import { Buffer } from 'buffer';
-import { toOutputScript } from 'bitcoinjs-lib/src/address';
+import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { CoinSelector } from './coin-selector.ts';
 import { Coin } from './coin.ts';
 import { ECPairFactory } from 'ecpair';
+import { createOutputs } from '../core';
+import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 
+initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 const bip32 = BIP32Factory(ecc);
 
@@ -160,6 +163,97 @@ export class Wallet {
 
     async send(address: string, amount: number): Promise<string> {
         const tx = await this.createAndSignTransaction([{ address, amount }]);
+        await this.network.broadcast(tx.toHex());
+
+        return tx.getId();
+    }
+
+    async sendToSilentAddress(
+        address: string,
+        amount: number,
+    ): Promise<string> {
+        const coins = await this.db.getUnspentCoins();
+        const totalBalance = coins.reduce((acc, coin) => acc + coin.value, 0);
+
+        if (amount > totalBalance) {
+            throw new Error(
+                `Insufficient funds. Available: ${totalBalance} sats, Requested: ${amount} sats`,
+            );
+        }
+
+        // we need input private keys to derive silent payment address,
+        // so we will use a dummy address for now and replace it later
+        const dummyOutputScript = Buffer.from(
+            '512030d54fd0dd420a6e5f8d3624f5f3482cae350f79d5f0753bf5beef9c2d91af3c',
+            'hex',
+        );
+
+        const dummyTx = new Transaction();
+        const dummyPsbt = new Psbt({ network: this.network.network });
+        dummyTx.addOutput(dummyOutputScript, amount);
+        dummyPsbt.addOutput({
+            address: fromOutputScript(dummyOutputScript, this.network.network),
+            value: amount,
+        });
+
+        const coinSelector = new CoinSelector(await this.network.getFeeRate());
+        const { coins: selectedCoins, change } = coinSelector.select(
+            coins,
+            dummyTx,
+        );
+
+        const privateKeys = (
+            await Promise.all(
+                selectedCoins.map((coin) => this.db.getAddress(coin.address)),
+            )
+        ).map((path) => this.masterKey.derivePath(path));
+        const outpoints = selectedCoins.map((coin) => ({
+            txid: coin.txid,
+            vout: coin.vout,
+        }));
+
+        const [{ script: internalPubKey }] = createOutputs(
+            privateKeys.map((key) => ({
+                key: key.privateKey.toString('hex'),
+                isXOnly: false,
+            })),
+            outpoints,
+            [{ address, amount }],
+            this.network.network,
+        );
+
+        const psbt = new Psbt({ network: this.network.network });
+        psbt.addOutput({
+            address: payments.p2tr({
+                pubkey: toXOnly(internalPubKey),
+                network: this.network.network,
+            }).address,
+            value: amount,
+        });
+
+        if (change > 0) {
+            const changeAddress = await this.deriveChangeAddress();
+            psbt.addOutput({
+                address: changeAddress,
+                value: change,
+            });
+        }
+
+        for (let index = 0; index < selectedCoins.length; index++) {
+            psbt.addInput(selectedCoins[index].toInput(this.network.network));
+            psbt.signInput(index, privateKeys[index]);
+        }
+
+        if (
+            !psbt.validateSignaturesOfAllInputs((pubkey, msghash, signature) =>
+                ECPair.fromPublicKey(pubkey).verify(msghash, signature),
+            )
+        ) {
+            throw new Error('Invalid signature');
+        }
+
+        psbt.finalizeAllInputs();
+        const tx = psbt.extractTransaction();
         await this.network.broadcast(tx.toHex());
 
         return tx.getId();
