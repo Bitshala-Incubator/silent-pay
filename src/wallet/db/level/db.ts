@@ -100,4 +100,19 @@ export class WalletDB implements DbInterface {
         const coins = JSON.parse(await this.db.sublevel(wdb.C).get('unspent'));
         return coins.map((coin: string) => Coin.fromJSON(coin));
     }
+
+    async saveSilentPaymentAddress(address: string): Promise<void> {
+        await this.db.put(wdb.SP, address);
+    }
+
+    async getSilentPaymentAddress(): Promise<string> {
+        try {
+            return await this.db.get(wdb.SP);
+        } catch (e) {
+            if ((e as { code: string }).code === 'LEVEL_NOT_FOUND') {
+                return undefined;
+            }
+            throw e;
+        }
+    }
 }
