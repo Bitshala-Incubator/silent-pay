@@ -9,7 +9,7 @@ import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { CoinSelector } from './coin-selector.ts';
 import { Coin } from './coin.ts';
 import { ECPairFactory } from 'ecpair';
-import { createOutputs } from '../core';
+import { createOutputs, encodeSilentPaymentAddress } from '../core';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 
 initEccLib(ecc);
@@ -257,5 +257,26 @@ export class Wallet {
         await this.network.broadcast(tx.toHex());
 
         return tx.getId();
+    }
+
+    async generateSilentPaymentAddress(): Promise<string> {
+        let address = await this.db.getSilentPaymentAddress();
+        if (address) return address;
+
+        const coinType = this.network.network.bech32 === 'bc' ? 0 : 1;
+        const spendKey = this.masterKey.derivePath(
+            `m/352'/${coinType}'/0'/0'/0`,
+        );
+        const scanKey = this.masterKey.derivePath(
+            `m/352'/${coinType}'/0'/1'/0`,
+        );
+
+        address = encodeSilentPaymentAddress(
+            scanKey.publicKey,
+            spendKey.publicKey,
+            this.network.network,
+        );
+        await this.db.saveSilentPaymentAddress(address);
+        return address;
     }
 }

@@ -4,4 +4,5 @@ export const wdb = {
     M: 'M', // Master key
     A: 'A', // Address
     C: 'C', // Coins
+    SP: 'SP', // Silent payment address
 };

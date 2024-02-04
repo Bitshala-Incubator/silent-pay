@@ -19,4 +19,6 @@ export type DbInterface = {
     getAllAddresses(): Promise<string[]>;
     saveUnspentCoins(coins: Coin[]): Promise<void>;
     getUnspentCoins(): Promise<Coin[]>;
+    saveSilentPaymentAddress(address: string): Promise<void>;
+    getSilentPaymentAddress(): Promise<string>;
 };

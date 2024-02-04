@@ -6,6 +6,7 @@ describe('Wallet', () => {
     let wallet: Wallet;
     let address: string;
     let bitcoinRpcClient: BitcoinRpcClient;
+    let silentPaymentAddress: string;
 
     beforeAll(async () => {
         const walletDB = new WalletDB({
@@ -108,9 +109,14 @@ describe('Wallet', () => {
         expect(await wallet.getBalance()).toBeLessThan(5000000);
     });
 
+    it('should generate a silent payment address', async () => {
+        silentPaymentAddress = await wallet.generateSilentPaymentAddress();
+        expect(silentPaymentAddress).toBeDefined();
+    });
+
     it('should send a payment to a sp address', async () => {
         const txid = await wallet.sendToSilentAddress(
-            'tsp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqauj52ymtc4xdkmx3tgyhrsemg2g3303xk2gtzfy8h8ejet8fz8jc693hkx',
+            silentPaymentAddress,
             4000000,
         );
 
