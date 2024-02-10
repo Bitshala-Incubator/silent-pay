@@ -24,6 +24,16 @@ describe('Wallet DB', () => {
         expect(await walletDB.getVersion()).toBe(1);
     });
 
+    it('should set and retrieve encryptedPrivateKey and encryptedChainCode', async () => {
+        const samplePrivateKey = 'samplePrivateKey';
+        const sampleChainCode = 'sampleChainCode';
+        await walletDB.setMasterKey(samplePrivateKey, sampleChainCode);
+        const { encryptedPrivateKey, encryptedChainCode } =
+            await walletDB.getMasterKey();
+        expect(encryptedPrivateKey).toStrictEqual(samplePrivateKey);
+        expect(encryptedChainCode).toStrictEqual(sampleChainCode);
+    });
+
     afterAll(async () => {
         await walletDB.close();
         fs.rmSync('./test/wallet-db', { recursive: true, force: true });

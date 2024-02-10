@@ -32,9 +32,17 @@ describe('Wallet', () => {
     });
 
     it('should initialise the wallet', async () => {
-        await wallet.init(
-            'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
-        );
+        await wallet.init({
+            mnemonic:
+                'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        });
+    });
+
+    it('should set a new password, close and reopen the wallet with the same password', async () => {
+        const password = 'notSoSecretPassword';
+        await wallet.setPassword(password);
+        await wallet.close();
+        await wallet.init({ password });
     });
 
     it('should derive first receive address', async () => {
