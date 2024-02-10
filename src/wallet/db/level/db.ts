@@ -68,19 +68,19 @@ export class WalletDB implements DbInterface {
     }
 
     async getReceiveDepth(): Promise<number> {
-        return parseInt(await this.db.sublevel(wdb.A).get('receiveDepth'));
+        return parseInt(await this.db.sublevel(wdb.D).get('receiveDepth'));
     }
 
     async setReceiveDepth(depth: number): Promise<void> {
-        await this.db.sublevel(wdb.A).put('receiveDepth', depth.toString());
+        await this.db.sublevel(wdb.D).put('receiveDepth', depth.toString());
     }
 
     async getChangeDepth(): Promise<number> {
-        return parseInt(await this.db.sublevel(wdb.A).get('changeDepth'));
+        return parseInt(await this.db.sublevel(wdb.D).get('changeDepth'));
     }
 
     async setChangeDepth(depth: number): Promise<void> {
-        await this.db.sublevel(wdb.A).put('changeDepth', depth.toString());
+        await this.db.sublevel(wdb.D).put('changeDepth', depth.toString());
     }
 
     async getAllAddresses(): Promise<string[]> {
