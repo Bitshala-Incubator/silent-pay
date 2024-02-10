@@ -59,7 +59,7 @@ The project is divided into two modules. The core module provides the core funct
 | **`src/core`**       | Contains core library functions that are needed to support silent payment integration in a wallet.               |
 | **`src/wallet`**     | Encompasses the wallet class which is responsible for all wallet-operations.                                     |
 | **`src/wallet/db`**  | Exposes a db interface. Provides a file-based key value database.                                                |
-| **`src/wallet/db`**  | Exposes an interface for network operations. Provides an Esplora client which implements the network interface.  |
+| **`src/wallet/network`**  | Exposes an interface for network operations. Provides an Esplora client which implements the network interface.  |
 | **`test`**           | Contains unit and integration tests.                                                                             |
 
 ## Project Status
