@@ -11,6 +11,7 @@ import { Coin } from './coin.ts';
 import { ECPairFactory } from 'ecpair';
 import { createOutputs, encodeSilentPaymentAddress } from '../core';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
+import { encrypt, decrypt } from 'bip38';
 
 initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -20,6 +21,8 @@ export type WalletConfigOptions = {
     db: DbInterface;
     networkClient: NetworkInterface;
 };
+
+const DEFAULT_ENCRYPTION_PASSWORD = '12345678';
 
 export class Wallet {
     private readonly db: DbInterface;
@@ -33,19 +36,29 @@ export class Wallet {
         this.network = config.networkClient;
     }
 
-    async init(mnemonic?: string) {
+    async init(params?: { mnemonic?: string; password?: string }) {
+        const { mnemonic, password } = params;
         await this.db.open();
 
         if (mnemonic) {
             const seed = mnemonicToSeedSync(mnemonic).toString('hex');
             this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
-            await this.db.setMasterKey(
-                this.masterKey.privateKey,
-                this.masterKey.chainCode,
-            );
+            this.setPassword(password ?? DEFAULT_ENCRYPTION_PASSWORD);
         } else {
-            const { privateKey, chaincode } = await this.db.getMasterKey();
-            this.masterKey = bip32.fromPrivateKey(privateKey, chaincode);
+            const { encryptedPrivateKey, encryptedChainCode } =
+                await this.db.getMasterKey();
+            const { privateKey: decryptedPrivateKey } = decrypt(
+                encryptedPrivateKey,
+                password ?? DEFAULT_ENCRYPTION_PASSWORD,
+            );
+            const { privateKey: decryptedChainCode } = decrypt(
+                encryptedChainCode,
+                password ?? DEFAULT_ENCRYPTION_PASSWORD,
+            );
+            this.masterKey = bip32.fromPrivateKey(
+                decryptedPrivateKey,
+                decryptedChainCode,
+            );
         }
     }
 
@@ -54,6 +67,26 @@ export class Wallet {
         await this.db.setChangeDepth(this.changeDepth);
 
         await this.db.close();
+    }
+
+    async setPassword(newPassword: string) {
+        if (!this.masterKey) {
+            throw new Error(
+                'Wallet not initialized. Please call wallet.init()',
+            );
+        } else {
+            const encryptedPrivateKey = encrypt(
+                this.masterKey.privateKey,
+                false,
+                newPassword,
+            );
+            const encryptedChainCode = encrypt(
+                this.masterKey.chainCode,
+                false,
+                newPassword,
+            );
+            await this.db.setMasterKey(encryptedPrivateKey, encryptedChainCode);
+        }
     }
 
     private async deriveAddress(path: string): Promise<string> {

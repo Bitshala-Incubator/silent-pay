@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer';
 import { Coin } from '../coin.ts';
 
 export type DbInterface = {
@@ -7,8 +6,14 @@ export type DbInterface = {
     getStatus(): string;
     getVersion(): Promise<number>;
     setVersion(version: number): Promise<void>;
-    getMasterKey(): Promise<{ privateKey: Buffer; chaincode: Buffer }>;
-    setMasterKey(privateKey: Buffer, chaincode: Buffer): Promise<void>;
+    getMasterKey(): Promise<{
+        encryptedPrivateKey: string;
+        encryptedChainCode: string;
+    }>;
+    setMasterKey(
+        encryptedPrivateKey: string,
+        encryptedChainCode: string,
+    ): Promise<void>;
     saveAddress(address: string, path: string): Promise<void>;
     getAddress(address: string): Promise<string>;
     hasAddress(address: string): Promise<boolean>;
