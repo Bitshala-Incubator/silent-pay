@@ -36,13 +36,25 @@ export class CoinSelector {
 
         const selected = this.selectCoins(pointers, target);
 
-        const change =
+        let change =
             selected.reduce(
                 (acc, index) => acc + pointers[index].effectiveValue,
                 0,
             ) - target;
 
-        // TODO: check if change is lower than dust limit, if so add it to fee
+        // Calculate the cost of change
+        const LONG_TERM_FEERATE = 5 // in sats/vB
+        const outputSize = 31;  // P2WPKH output is 31 B
+        const inputSizeOfChangeUTXO = 68.0; // P2WPKH input is 68.0 vbytes
+
+        const costOfChangeOutput = outputSize * this.feeRate;
+        const costOfSpendingChange = inputSizeOfChangeUTXO * LONG_TERM_FEERATE;
+        const costOfChange = costOfChangeOutput + costOfSpendingChange;
+
+        // Check if change is less than the cost of change
+        if(change <= costOfChange) {
+            change = 0;
+        }
 
         return {
             coins: selected.map((index) => pointers[index].coin),
