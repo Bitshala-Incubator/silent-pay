@@ -15,7 +15,8 @@ export type DbInterface = {
         encryptedChainCode: string,
     ): Promise<void>;
     saveAddress(address: string, path: string): Promise<void>;
-    getAddress(address: string): Promise<string>;
+    getPathFromAddress(address: string): Promise<string>;
+    getAddressFromPath(path: string): Promise<string>;
     hasAddress(address: string): Promise<boolean>;
     getReceiveDepth(): Promise<number>;
     setReceiveDepth(depth: number): Promise<void>;

@@ -56,11 +56,18 @@ export class WalletDB implements DbInterface {
     }
 
     public async saveAddress(address: string, path: string): Promise<void> {
-        await this.db.sublevel(wdb.A).put(address, path);
+        await Promise.all([
+            this.db.sublevel(wdb.A).put(address, path),
+            this.db.sublevel(wdb.P).put(path, address),
+        ]);
     }
 
-    public async getAddress(address: string): Promise<string> {
+    public async getPathFromAddress(address: string): Promise<string> {
         return await this.db.sublevel(wdb.A).get(address);
+    }
+
+    public async getAddressFromPath(path: string): Promise<string> {
+        return await this.db.sublevel(wdb.P).get(path);
     }
 
     async hasAddress(address: string): Promise<boolean> {

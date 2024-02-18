@@ -20,9 +20,11 @@ const bip32 = BIP32Factory(ecc);
 export type WalletConfigOptions = {
     db: DbInterface;
     networkClient: NetworkInterface;
+    lookahead?: number;
 };
 
 const DEFAULT_ENCRYPTION_PASSWORD = '12345678';
+const DEFAULT_LOOKAHEAD = 10;
 
 export class Wallet {
     private readonly db: DbInterface;
@@ -30,10 +32,12 @@ export class Wallet {
     private masterKey: BIP32Interface;
     private receiveDepth: number = 0;
     private changeDepth: number = 0;
+    private lookahead: number;
 
     constructor(config: WalletConfigOptions) {
         this.db = config.db;
         this.network = config.networkClient;
+        this.lookahead = config.lookahead ?? DEFAULT_LOOKAHEAD;
     }
 
     async init(params?: { mnemonic?: string; password?: string }) {
@@ -44,6 +48,9 @@ export class Wallet {
             const seed = mnemonicToSeedSync(mnemonic).toString('hex');
             this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
             this.setPassword(password ?? DEFAULT_ENCRYPTION_PASSWORD);
+            for (let i = 0; i < this.lookahead; i++) {
+                await this.deriveAddress(`m/84'/0'/0'/0/${i}`);
+            }
         } else {
             const { encryptedPrivateKey, encryptedChainCode } =
                 await this.db.getMasterKey();
@@ -102,8 +109,11 @@ export class Wallet {
     }
 
     async deriveReceiveAddress(): Promise<string> {
-        const path = `m/84'/0'/0'/0/${this.receiveDepth}`;
-        const address = await this.deriveAddress(path);
+        const nextPath = `m/84'/0'/0'/0/${this.receiveDepth + this.lookahead}`;
+        await this.deriveAddress(nextPath);
+        const address = await this.db.getAddressFromPath(
+            `m/84'/0'/0'/0/${this.receiveDepth}`,
+        );
         this.receiveDepth++;
         return address;
     }
@@ -133,7 +143,7 @@ export class Wallet {
 
     private async signTransaction(psbt: Psbt, coins: Coin[]): Promise<void> {
         for (let index = 0; index < coins.length; index++) {
-            const path = await this.db.getAddress(coins[index].address);
+            const path = await this.db.getPathFromAddress(coins[index].address);
             const privateKey = this.masterKey.derivePath(path);
             psbt.signInput(index, privateKey);
         }
@@ -237,7 +247,9 @@ export class Wallet {
 
         const privateKeys = (
             await Promise.all(
-                selectedCoins.map((coin) => this.db.getAddress(coin.address)),
+                selectedCoins.map((coin) =>
+                    this.db.getPathFromAddress(coin.address),
+                ),
             )
         ).map((path) => this.masterKey.derivePath(path));
         const outpoints = selectedCoins.map((coin) => ({
