@@ -11,6 +11,7 @@ class CoinPointer {
 
 export class CoinSelector {
     private readonly feeRate: number = 1;
+    public static readonly LONG_TERM_FEERATE: number = 5; // in sats/vB
     constructor(feeRate?: number) {
         this.feeRate = feeRate;
     }
@@ -43,16 +44,10 @@ export class CoinSelector {
             ) - target;
 
         // Calculate the cost of change
-        const LONG_TERM_FEERATE = 5 // in sats/vB
-        const outputSize = 31;  // P2WPKH output is 31 B
-        const inputSizeOfChangeUTXO = 68.0; // P2WPKH input is 68.0 vbytes
-
-        const costOfChangeOutput = outputSize * this.feeRate;
-        const costOfSpendingChange = inputSizeOfChangeUTXO * LONG_TERM_FEERATE;
-        const costOfChange = costOfChangeOutput + costOfSpendingChange;
+        const costOfChange = this.costOfChange;
 
         // Check if change is less than the cost of change
-        if(change <= costOfChange) {
+        if (change <= costOfChange) {
             change = 0;
         }
 
@@ -60,6 +55,36 @@ export class CoinSelector {
             coins: selected.map((index) => pointers[index].coin),
             change,
         };
+    }
+
+    get costOfChange() {
+        // P2WPKH output size in bytes:
+        // Pay-to-Witness-Public-Key-Hash (P2WPKH) outputs have a fixed size of 31 bytes:
+        // - 8 bytes to encode the value
+        // - 1 byte variable-length integer encoding the locking script’s size
+        // - 22 byte locking script
+        const outputSize = 31;
+
+        // P2WPKH input size estimation:
+        // - Composition:
+        //   - PREVOUT: hash (32 bytes), index (4 bytes)
+        //   - SCRIPTSIG: length (1 byte), scriptsig for P2WPKH input is empty
+        //   - sequence (4 bytes)
+        //   - WITNESS STACK:
+        //     - item count (1 byte)
+        //     - signature length (1 byte)
+        //     - signature (71 or 72 bytes)
+        //     - pubkey length (1 byte)
+        //     - pubkey (33 bytes)
+        // - Total:
+        //   32 + 4 + 1 + 4 + (1 + 1 + 72 + 1 + 33) / 4 = 68 vbytes
+        const inputSizeOfChangeUTXO = 68;
+
+        const costOfChangeOutput = outputSize * this.feeRate;
+        const costOfSpendingChange =
+            inputSizeOfChangeUTXO * CoinSelector.LONG_TERM_FEERATE;
+
+        return costOfChangeOutput + costOfSpendingChange;
     }
 
     private selectCoins(pointers: CoinPointer[], target: number) {
