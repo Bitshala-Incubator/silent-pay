@@ -1,4 +1,4 @@
-import { scanOutputs, LabelMap } from '../src/core';
+import { scanOutputs, LabelMap } from '../src';
 import { Buffer } from 'buffer';
 import { testData } from './fixtures/scanning';
 

@@ -1,4 +1,4 @@
-import { Transaction } from '../src/core';
+import { Transaction } from '../src';
 import { validTransactions } from './fixtures/transaction';
 
 describe('Transaction', () => {

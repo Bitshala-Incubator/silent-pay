@@ -1,4 +1,4 @@
-import { Coin } from '../coin.ts';
+import { Coin } from './coin.ts';
 
 export type DbInterface = {
     open(): Promise<void>;

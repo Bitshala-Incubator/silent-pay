@@ -1,7 +1,5 @@
 {
   "name": "silent-pay",
-  "version": "0.0.0",
-  "description": "A Silent Payments library",
   "author": "Anmol Sharma",
   "license": "MIT",
   "homepage": "https://github.com/Bitshala-Incubator/silent-pay",
@@ -17,48 +15,17 @@
     "bitcoin"
   ],
   "type": "module",
-  "main": "./dist/silent-pay.umd.cjs",
-  "module": "./dist/silent-pay.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/silent-pay.js",
-      "require": "./dist/silent-pay.umd.cjs"
-    }
-  },
-  "files": [
-    "dist"
+  "workspaces": [
+    "./packages/*"
   ],
   "scripts": {
-    "build": "tsc && vite build",
     "format": "prettier --ignore-path .gitignore --loglevel=silent --write \"**/*.+(js|ts|json)\"  \"!dist/*\"",
     "format:check": "prettier --check \"**/*.+(js|ts|json)\" \"!dist/*\"",
-    "lint": "eslint --ext .js,.ts .  --ignore-pattern \"dist/*\"",
-    "test": "jest",
-    "test:cov": "jest --coverage",
-    "test:watch": "jest --watchAll",
-    "types:check": "tsc --noemit"
-  },
-  "dependencies": {
-    "axios": "^1.6.3",
-    "bech32": "^2.0.0",
-    "bip32": "^4.0.0",
-    "bip38": "^3.1.1",
-    "bip39": "^3.1.0",
-    "bitcoinjs-lib": "^6.1.5",
-    "buffer": "^6.0.3",
-    "create-hash": "^1.2.0",
-    "ecpair": "^2.1.0",
-    "level": "^8.0.0",
-    "secp256k1": "^5.0.0",
-    "tiny-secp256k1": "^2.2.3"
+    "lint": "eslint --ext .js,.ts .  --ignore-pattern \"dist/*\""
   },
   "devDependencies": {
-    "@types/bip38": "^3.1.2",
-    "@types/create-hash": "^1.2.3",
     "@types/jest": "^29.5.3",
     "@types/node": "^20.5.0",
-    "@types/secp256k1": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
     "eslint": "^8.40.0",
@@ -70,14 +37,12 @@
     "prettier": "^2.7.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5",
-    "vite-plugin-dts": "^3.5.2"
+    "typescript": "^5.0.2"
   },
   "lint-staged": {
     "*.ts": [
       "bash -c 'npm run lint'",
-      "bash -c 'npm run types:check'"
+      "bash -c 'npm run types:check --ws'"
     ],
     "*.{ts,yaml,json}": [
       "bash -c 'npm run format'"

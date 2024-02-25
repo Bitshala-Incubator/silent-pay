@@ -1,17 +1,17 @@
-import { DbInterface } from './db';
-import { NetworkInterface } from './network';
 import { mnemonicToSeedSync } from 'bip39';
 import { initEccLib, payments, Psbt, Transaction } from 'bitcoinjs-lib';
 import BIP32Factory, { BIP32Interface } from 'bip32';
 import * as ecc from 'tiny-secp256k1';
 import { Buffer } from 'buffer';
 import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
-import { CoinSelector } from './coin-selector.ts';
-import { Coin } from './coin.ts';
 import { ECPairFactory } from 'ecpair';
-import { createOutputs, encodeSilentPaymentAddress } from '../core';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
+import {
+    createOutputs,
+    encodeSilentPaymentAddress,
+} from '@silent-pay/core/src';
+import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
 
 initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -78,9 +78,7 @@ export class Wallet {
 
     async setPassword(newPassword: string) {
         if (!this.masterKey) {
-            throw new Error(
-                'Wallet not initialized. Please call wallet.init()',
-            );
+            throw new Error('Wallet not initialized. Please call src.init()');
         } else {
             const encryptedPrivateKey = encrypt(
                 this.masterKey.privateKey,

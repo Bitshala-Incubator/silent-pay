@@ -1,5 +1,5 @@
-import { WalletDB } from '../src/wallet';
 import fs from 'fs';
+import { WalletDB } from '../src';
 
 describe('Wallet DB', () => {
     let walletDB: WalletDB;

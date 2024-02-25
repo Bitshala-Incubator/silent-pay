@@ -2,7 +2,7 @@ import {
     createLabeledSilentPaymentAddress,
     decodeSilentPaymentAddress,
     encodeSilentPaymentAddress,
-} from '../src/core';
+} from '../src';
 import { Buffer } from 'buffer';
 import { unlabelled, labelled } from './fixtures/encoding';
 

@@ -1,9 +1,8 @@
-import { NetworkInterface } from './network.interface.ts';
+import { NetworkInterface, Coin } from '@silent-pay/wallet/src';
 import { URL } from 'url';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { Network } from 'bitcoinjs-lib';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { regtest, testnet, bitcoin } from 'bitcoinjs-lib/src/networks';
-import { Coin } from '../coin.ts';
 
 export type EsploraConfigOptions = {
     network: 'testnet' | 'main' | 'regtest';

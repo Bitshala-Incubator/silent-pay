@@ -1,9 +1,4 @@
-import {
-    createOutputs,
-    Outpoint,
-    PrivateKey,
-    RecipientAddress,
-} from '../src/core';
+import { createOutputs, Outpoint, PrivateKey, RecipientAddress } from '../src';
 import { testData } from './fixtures/outputs';
 
 describe('Outputs', () => {

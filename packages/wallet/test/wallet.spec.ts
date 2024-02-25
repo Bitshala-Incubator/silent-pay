@@ -1,6 +1,8 @@
-import { EsploraClient, Wallet, WalletDB } from '../src/wallet';
 import * as fs from 'fs';
 import { BitcoinRpcClient } from './helpers/bitcoin-rpc-client';
+import { Wallet } from '../src';
+import { WalletDB } from '@silent-pay/level/src';
+import { EsploraClient } from '@silent-pay/esplora/src';
 
 describe('Wallet', () => {
     let wallet: Wallet;

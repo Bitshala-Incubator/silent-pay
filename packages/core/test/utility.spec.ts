@@ -3,7 +3,7 @@ import {
     hashOutpoints,
     Outpoint,
     PrivateKey,
-} from '../src/core';
+} from '../src';
 import { inputPrivateKeys, outpoints } from './fixtures/utility';
 
 describe('Utility', () => {

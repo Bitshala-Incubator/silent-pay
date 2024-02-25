@@ -1,7 +1,6 @@
 import { Level } from 'level';
 import { wdb } from './layout.ts';
-import { DbInterface } from '../db.interface.ts';
-import { Coin } from '../../coin.ts';
+import { Coin, DbInterface } from '@silent-pay/wallet/src';
 
 export type LevelDBConfigOptions = {
     location: string;

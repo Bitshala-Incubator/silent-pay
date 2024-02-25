@@ -30,4 +30,4 @@ jobs:
         if: success() || failure()
         run: npm run lint
       - name: Run Typescript Compilation Check
-        run: npm run types:check
+        run: npm run types:check --ws

@@ -1,4 +1,4 @@
-import { EsploraClient } from '../src/wallet';
+import { EsploraClient } from '../src';
 
 describe('EsploraClient', () => {
     let client: EsploraClient;

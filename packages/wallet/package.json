@@ -1,0 +1,43 @@
+{
+  "name": "@silent-pay/wallet",
+  "version": "0.0.0",
+  "description": "A library for bitcoin silent payments. This package includes a wallet for sending, receiving and spending silent payments.",
+  "main": "dist/wallet/index.js",
+  "types": "dist/wallet/index.d.ts",
+  "files": [
+    "dist/wallet"
+  ],
+  "author": "Anmol Sharma",
+  "license": "MIT",
+  "homepage": "https://github.com/Bitshala-Incubator/silent-pay",
+  "scripts": {
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "build": "tsc -p tsconfig.build.json",
+    "types:check": "tsc --noemit -p tsconfig.build.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bitshala-Incubator/silent-pay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bitshala-Incubator/silent-pay/issues"
+  },
+  "keywords": [
+    "silent payments",
+    "bitcoin"
+  ],
+  "type": "module",
+  "dependencies": {
+    "bitcoinjs-lib": "^6.1.5",
+    "bip32": "^4.0.0",
+    "bip38": "^3.1.1",
+    "bip39": "^3.1.0",
+    "buffer": "^6.0.3",
+    "ecpair": "^2.1.0",
+    "tiny-secp256k1": "^2.2.3"
+  },
+  "devDependencies": {
+    "@types/bip38": "^3.1.2"
+  }
+}
