@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center;">
 
 <h1>SilentPay - A wallet library for silent payments</h1>
 
@@ -44,23 +44,29 @@ Read more about silent payments in [BIP 352](https://github.com/bitcoin/bips/pul
 
 ## Architecture
 
-The project is divided into two modules. The core module provides the core functionalities of silent payments and the wallet module provides a simple wallet that supports silent payments.
+The project is divided into four modules.
 
 ```console
-├── src
+├── packages
 │   ├── core
+│   │   ├── src
+│   │   └── test
+│   ├── esplora
+│   │   ├── src
+│   │   └── test
+│   ├── level
+│   │   ├── src
+│   │   └── test
 │   └── wallet
-│       ├── db
-│       └── network
-└── test
+│       ├── src
+│       └── test
 ```
-| **Directory**        | **Description**                                                                                                  |
-|----------------------|------------------------------------------------------------------------------------------------------------------|
-| **`src/core`**       | Contains core library functions that are needed to support silent payment integration in a wallet.               |
-| **`src/wallet`**     | Encompasses the wallet class which is responsible for all wallet-operations.                                     |
-| **`src/wallet/db`**  | Exposes a db interface. Provides a file-based key value database.                                                |
-| **`src/wallet/network`**  | Exposes an interface for network operations. Provides an Esplora client which implements the network interface.  |
-| **`test`**           | Contains unit and integration tests.                                                                             |
+| **Directory**          | **Description**                                                                                    |
+|------------------------|----------------------------------------------------------------------------------------------------|
+| **`packages/core`**    | Contains core library functions that are needed to support silent payment integration in a wallet. |
+| **`packages/esplora`** | Provides an Esplora client which implements the network interface.                                 |
+| **`packages/level`**   | Provides a file-based key value database which implements the db interface.                        |
+| **`packages/wallet`**  | Encompasses the wallet class which is responsible for all wallet-operations.                       |
 
 ## Project Status
 
@@ -78,7 +84,7 @@ Few directions for new contributors:
 
 - Issues marked with [`good first issue`](https://github.com/Bitshala-Incubator/silent-pay/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) are good places to get started.
 
-- [Tests](./test) are a good place to start gathering a contextual understanding of the codebase.
+- Tests are a good place to start gathering a contextual understanding of the codebase.
 
 - Reviewing [open PRs](https://github.com/Bitshala-Incubator/silent-pay/pulls) are a good place to understand the codebase and the contribution process.
 

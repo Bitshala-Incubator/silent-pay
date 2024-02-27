@@ -9,23 +9,29 @@ If you have questions about how to use Silent Pay direct these to [Discord](http
 
 ### Project Structure
 
-The project is divided into two modules. The core module provides the core functionalities of silent payments and the wallet module provides a simple wallet that supports silent payments.
+The project is divided into four modules.
 
 ```console
-├── src
+├── packages
 │   ├── core
+│   │   ├── src
+│   │   └── test
+│   ├── esplora
+│   │   ├── src
+│   │   └── test
+│   ├── level
+│   │   ├── src
+│   │   └── test
 │   └── wallet
-│       ├── db
-│       └── network
-└── test
+│       ├── src
+│       └── test
 ```
-| **Directory**            | **Description**                                                                                                  |
-|--------------------------|------------------------------------------------------------------------------------------------------------------|
-| **`src/core`**           | Contains core library functions that are needed to support silent payment integration in a wallet.               |
-| **`src/wallet`**         | Encompasses the wallet class which is responsible for all wallet-operations.                                     |
-| **`src/wallet/db`**      | Exposes a db interface. Provides a file-based key value database.                                                |
-| **`src/wallet/network`** | Exposes an interface for network operations. Provides an Esplora client which implements the network interface.  |
-| **`test`**               | Contains unit and integration tests.                                                                             |
+| **Directory**          | **Description**                                                                                    |
+|------------------------|----------------------------------------------------------------------------------------------------|
+| **`packages/core`**    | Contains core library functions that are needed to support silent payment integration in a wallet. |
+| **`packages/esplora`** | Provides an Esplora client which implements the network interface.                                 |
+| **`packages/level`**   | Provides a file-based key value database which implements the db interface.                        |
+| **`packages/wallet`**  | Encompasses the wallet class which is responsible for all wallet-operations.                       |
 
 ### Development Environment
 
