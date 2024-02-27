@@ -7,10 +7,7 @@ import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { ECPairFactory } from 'ecpair';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
-import {
-    createOutputs,
-    encodeSilentPaymentAddress,
-} from '@silent-pay/core/src';
+import { createOutputs, encodeSilentPaymentAddress } from '@silent-pay/core';
 import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
 
 initEccLib(ecc);

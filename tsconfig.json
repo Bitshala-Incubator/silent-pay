@@ -23,7 +23,16 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+
+    /* Module resolution */
+    "baseUrl": ".",
+    "paths": {
+      "@silent-pay/core": ["./packages/core/src"],
+      "@silent-pay/esplora": ["./packages/esplora/src"],
+      "@silent-pay/level": ["./packages/level/src"],
+      "@silent-pay/wallet": ["./packages/wallet/src"]
+    }
   },
   "include": ["src"],
   "exclude": ["**/*.spec.ts", "node_modules/**/*"]

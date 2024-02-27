@@ -1,4 +1,4 @@
-import { NetworkInterface, Coin } from '@silent-pay/wallet/src';
+import { NetworkInterface, Coin } from '@silent-pay/wallet';
 import { URL } from 'url';
 import { Network } from 'bitcoinjs-lib';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
