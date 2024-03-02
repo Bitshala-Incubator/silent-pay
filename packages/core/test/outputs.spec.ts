@@ -1,19 +1,14 @@
-import { createOutputs, Outpoint, PrivateKey, RecipientAddress } from '../src';
+import { createOutputs } from '../src';
 import { testData } from './fixtures/outputs';
 
 describe('Outputs', () => {
     it.each(testData)(
-        'should create silent payments public keys',
-        (data: {
-            privateKeys: PrivateKey[];
-            outpoints: Outpoint[];
-            recipientAddresses: RecipientAddress[];
-            expected: { pubkey: string; value: number }[];
-        }) => {
+        'should create silent payments public keys: $description',
+        ({ privateKeys, outpoint, recipientAddresses, expected }) => {
             const outputs = createOutputs(
-                data.privateKeys,
-                data.outpoints,
-                data.recipientAddresses,
+                privateKeys,
+                outpoint,
+                recipientAddresses,
             );
             expect(
                 outputs
@@ -23,7 +18,7 @@ describe('Outputs', () => {
                     }))
                     .sort((a, b) => a.pubkey.localeCompare(b.pubkey)),
             ).toStrictEqual(
-                data.expected.sort((a, b) => a.pubkey.localeCompare(b.pubkey)),
+                expected.sort((a, b) => a.pubkey.localeCompare(b.pubkey)),
             );
         },
     );

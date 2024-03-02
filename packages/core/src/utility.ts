@@ -3,21 +3,6 @@ import secp256k1 from 'secp256k1';
 import createHash from 'create-hash';
 import { Buffer } from 'buffer';
 
-export const hashOutpoints = (outpoints: Outpoint[]): Buffer => {
-    const outpointBuffer = Buffer.concat(
-        outpoints
-            .map((outpoint) =>
-                Buffer.concat([
-                    Buffer.from(outpoint.txid, 'hex').reverse(),
-                    serialiseUint32LE(outpoint.vout),
-                ]),
-            )
-            .sort((a, b) => a.compare(b)),
-    );
-
-    return createHash('sha256').update(outpointBuffer).digest();
-};
-
 export const createInputHash = (
     sumOfInputPublicKeys: Buffer,
     outpoint: Outpoint,

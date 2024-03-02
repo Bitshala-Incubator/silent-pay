@@ -247,17 +247,25 @@ export class Wallet {
                 ),
             )
         ).map((path) => this.masterKey.derivePath(path));
-        const outpoints = selectedCoins.map((coin) => ({
-            txid: coin.txid,
-            vout: coin.vout,
-        }));
+
+        // find the coin with smallest outpoint
+        const smallestOutpointCoin = selectedCoins.reduce((acc, coin) => {
+            const comp = Buffer.from(coin.txid, 'hex')
+                .reverse()
+                .compare(Buffer.from(acc.txid, 'hex').reverse());
+            if (comp < 0 || (comp === 0 && coin.vout < acc.vout)) return coin;
+            return acc;
+        }, selectedCoins[0]);
 
         const [{ script: internalPubKey }] = createOutputs(
             privateKeys.map((key) => ({
                 key: key.privateKey.toString('hex'),
                 isXOnly: false,
             })),
-            outpoints,
+            {
+                txid: smallestOutpointCoin.txid,
+                vout: smallestOutpointCoin.vout,
+            },
             [{ address, amount }],
             this.network.network,
         );

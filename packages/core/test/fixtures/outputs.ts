@@ -1,5 +1,6 @@
 export const testData = [
     {
+        description: 'Simple send: two inputs',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -10,31 +11,26 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '0239a1e5ff6206cd316151b9b34cee4f80bb48ce61adee0a12ce7ff05ea436a1d9',
-                value: 0.1,
+                pubkey: '033e9fce73d4e77a4809908e3c3a2e54ee147b9312dc5044a193d1fc85de46e3c1',
+                value: 1.0,
             },
         ],
     },
     {
+        description: 'Simple send: two inputs, order reversed',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -45,31 +41,26 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '0239a1e5ff6206cd316151b9b34cee4f80bb48ce61adee0a12ce7ff05ea436a1d9',
-                value: 0.1,
+                pubkey: '033e9fce73d4e77a4809908e3c3a2e54ee147b9312dc5044a193d1fc85de46e3c1',
+                value: 1.0,
             },
         ],
     },
     {
+        description: 'Simple send: two inputs from the same transaction',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -80,31 +71,27 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 3,
-            },
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 7,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 3,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '03162f2298705b3ddca01ce1d214eedff439df3927582938d08e29e464908db00b',
-                value: 0.1,
+                pubkey: '0379e71baa2ba3fc66396de3a04f168c7bf24d6870ec88ca877754790c1db357b6',
+                value: 1.0,
             },
         ],
     },
     {
+        description:
+            'Simple send: two inputs from the same transaction, order reversed',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -115,31 +102,27 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 7,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 3,
-            },
-        ],
+        outpoint: {
+            txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
+            vout: 3,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '02d9ede52f7e1e64e36ccf895ca0250daad96b174987079c903519b17852b21a3f',
-                value: 0.1,
+                pubkey: '03f4c2da807f89cb1501f1a77322a895acfb93c28e08ed2724d2beb8e44539ba38',
+                value: 1.0,
             },
         ],
     },
     {
+        description:
+            'Single recipient: multiple UTXOs from the same public key',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -150,31 +133,26 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '020aafdcdb5893ae813299b16eea75f34ec16653ac39171da04d7c4e6d2e09ab8e',
-                value: 0.1,
+                pubkey: '03548ae55c8eec1e736e8d3e520f011f1f42a56d166116ad210b3937599f87f566',
+                value: 1.0,
             },
         ],
     },
     {
+        description: 'Single recipient: taproot only inputs with even y-values',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -185,66 +163,58 @@ export const testData = [
                 isXOnly: true,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '0215d1dfe4403791509cf47f073be2eb3277decabe90da395e63b1f49a09fe965e',
-                value: 0.1,
+                pubkey: '02de88bea8e7ffc9ce1af30d1132f910323c505185aec8eae361670421e749a1fb',
+                value: 1.0,
             },
         ],
     },
     {
+        description:
+            'Single recipient: taproot only with mixed even/odd y-values',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
                 isXOnly: true,
             },
             {
-                key: '0378e95685b74565fa56751b84a32dfd18545d10d691641b8372e32164fad66a',
+                key: '1d37787c2b7116ee983e9f9c13269df29091b391c04db94239e0d2bc2182c3bf',
                 isXOnly: true,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '0215d1dfe4403791509cf47f073be2eb3277decabe90da395e63b1f49a09fe965e',
-                value: 0.1,
+                pubkey: '0377cab7dd12b10259ee82c6ea4b509774e33e7078e7138f568092241bf26b99f1',
+                value: 1.0,
             },
         ],
     },
     {
+        description:
+            'Single recipient: taproot input with even y-value and non-taproot input',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -255,34 +225,30 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '032b4ff8e5bc608cbdd12117171e7d265b6882ad597559caf67b5ecfaf15301dd0',
-                value: 0.1,
+                pubkey: '0330523cca96b2a9ae3c98beb5e60f7d190ec5bc79b2d11a0b2d4d09a608c448f0',
+                value: 1.0,
             },
         ],
     },
     {
+        description:
+            'Single recipient: taproot input with odd y-value and non-taproot input',
         privateKeys: [
             {
-                key: '0378e95685b74565fa56751b84a32dfd18545d10d691641b8372e32164fad66a',
+                key: '1d37787c2b7116ee983e9f9c13269df29091b391c04db94239e0d2bc2182c3bf',
                 isXOnly: true,
             },
             {
@@ -290,31 +256,26 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '0275f501f319db549aaa613717bd7af44da566d4d859b67fe436946564fafc47a3',
-                value: 0.1,
+                pubkey: '03359358f59ee9e9eec3f00bdf4882570fd5c182e451aa2650b788544aff012a3a',
+                value: 1.0,
             },
         ],
     },
     {
+        description: 'Multiple outputs: multiple outputs, same recipient',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -325,40 +286,35 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 2.0,
             },
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.2,
+                amount: 3.0,
             },
         ],
         expected: [
             {
-                pubkey: '0264f1c7e8992352d18cdbca600b9e1c3a6025050d56a3e1cc833222e4f3b59e18',
-                value: 0.1,
+                pubkey: '03f207162b1a7abc51c42017bef055e9ec1efc3d3567cb720357e2b84325db33ac',
+                value: 2.0,
             },
             {
-                pubkey: '030a48c6ccc1d516e8244dc0153dc88db45f8f264357667c2057a29ca3c2445d09',
-                value: 0.2,
+                pubkey: '02e976a58fbd38aeb4e6093d4df02e9c1de0c4513ae0c588cef68cda5b2f8834ca',
+                value: 3.0,
             },
         ],
     },
     {
+        description: 'Multiple outputs: multiple outputs, multiple recipients',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -369,58 +325,53 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 2.0,
             },
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.2,
+                amount: 3.0,
             },
             {
                 address:
                     'sp1qqgrz6j0lcqnc04vxccydl0kpsj4frfje0ktmgcl2t346hkw30226xqupawdf48k8882j0strrvcmgg2kdawz53a54dd376ngdhak364hzcmynqtn',
-                amount: 0.3,
+                amount: 4.0,
             },
             {
                 address:
                     'sp1qqgrz6j0lcqnc04vxccydl0kpsj4frfje0ktmgcl2t346hkw30226xqupawdf48k8882j0strrvcmgg2kdawz53a54dd376ngdhak364hzcmynqtn',
-                amount: 0.4,
+                amount: 5.0,
             },
         ],
         expected: [
             {
-                pubkey: '0264f1c7e8992352d18cdbca600b9e1c3a6025050d56a3e1cc833222e4f3b59e18',
-                value: 0.1,
+                pubkey: '03f207162b1a7abc51c42017bef055e9ec1efc3d3567cb720357e2b84325db33ac',
+                value: 2.0,
             },
             {
-                pubkey: '030a48c6ccc1d516e8244dc0153dc88db45f8f264357667c2057a29ca3c2445d09',
-                value: 0.2,
+                pubkey: '02e976a58fbd38aeb4e6093d4df02e9c1de0c4513ae0c588cef68cda5b2f8834ca',
+                value: 3.0,
             },
             {
-                pubkey: '02c58e121044b23cba9b4695052229a9fd9e044b579f92864eb886ae7c99b021c9',
-                value: 0.3,
+                pubkey: '03841792c33c9dc6193e76744134125d40add8f2f4a96475f28ba150be032d64e8',
+                value: 4.0,
             },
             {
-                pubkey: '034b15b75f3f184328c4a2f7c79357481ed06cf3b6f95512d5ed946fdc0b60d62b',
-                value: 0.4,
+                pubkey: '032e847bb01d1b491da512ddd760b8509617ee38057003d6115d00ba562451323a',
+                value: 5.0,
             },
         ],
     },
     {
+        description: 'Receiving with labels: label with odd parity',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -431,31 +382,26 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqhmem6grvs4nacsu0v5v5mjs934j7qfgkdkj8c95gyuru3tjpulvcwky2dz',
-                amount: 0.1,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjex54dmqmmv6rw353tsuqhs99ydvadxzrsy9nuvk74epvee55drs734pqq',
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '022cbceeab2a4982841eb7dc34b8b4f19c04bf3bc083ebf984f5664366778eb50f',
-                value: 0.1,
+                pubkey: '02d014d4860f67d607d60b1af70e0ee236b99658b61bb769832acbbe87c374439a',
+                value: 1.0,
             },
         ],
     },
     {
+        description: 'Receiving with labels: label with odd parity',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -466,31 +412,26 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqc389f45lq7jyqt8jxq6fkskfukr2tlruf6w8cpcx2krntwe4fr9ykagp3j',
-                amount: 0.1,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqsg59z2rppn4qlkx0yz9sdltmjv3j8zgcqadjn4ug98m3t6plujsq9qvu5n',
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '036b4455de119f51bf4d4a12dea555f14a5dc2c1369af5fba4871c5367264c028d',
-                value: 0.1,
+                pubkey: '0367626aebb3c4307cf0f6c39ca23247598fabf675ab783292eb2f81ae75ad1f8c',
+                value: 1.0,
             },
         ],
     },
     {
+        description: 'Receiving with labels: label with odd parity',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -501,31 +442,27 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgq4umqa5feskydh9xadc9jlc22c89tu0apcv72u2vkuwtsrgzf0uesq45zq9',
-                amount: 0.1,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgq7c2zfthc6x3a5yecwc52nxa0kfd20xuz08zyrjpfw4l2j257yq6qgnkdh5',
+                amount: 1.0,
             },
         ],
         expected: [
             {
-                pubkey: '03c3473bfcbe5e4d20d0790ae91f1b339bc15b46de64ca068d140118d0e325b849',
-                value: 0.1,
+                pubkey: '037efa60ce78ac343df8a013a2027c6c5ef29f9502edcbd769d2c21717fecc5951',
+                value: 1.0,
             },
         ],
     },
     {
+        description:
+            'Multiple outputs with labels: multiple outputs for labeled address; same recipient',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -536,40 +473,36 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqah4hxfsjdwyaeel4g8x2npkj7qlvf2692l5760z5ut0ggnlrhdzsy3cvsj',
-                amount: 0.2,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqaxww2fnhrx05cghth75n0qcj59e3e2anscr0q9wyknjxtxycg07y3pevyj',
+                amount: 2.0,
             },
         ],
         expected: [
             {
-                pubkey: '0264f1c7e8992352d18cdbca600b9e1c3a6025050d56a3e1cc833222e4f3b59e18',
-                value: 0.1,
+                pubkey: '03f207162b1a7abc51c42017bef055e9ec1efc3d3567cb720357e2b84325db33ac',
+                value: 1.0,
             },
             {
-                pubkey: '027956317130124c32afd07b3f2432a3e92c1447cf58da95491a307ae3d564535e',
-                value: 0.2,
+                pubkey: '0239f42624d5c32a77fda80ff0acee269afec601d3791803e80252ae04e4ffcf4c',
+                value: 2.0,
             },
         ],
     },
     {
+        description:
+            'Multiple outputs with labels: multiple outputs for labeled address; same recipient',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -580,40 +513,36 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqah4hxfsjdwyaeel4g8x2npkj7qlvf2692l5760z5ut0ggnlrhdzsy3cvsj',
-                amount: 0.1,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqaxww2fnhrx05cghth75n0qcj59e3e2anscr0q9wyknjxtxycg07y3pevyj',
+                amount: 3.0,
             },
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqah4hxfsjdwyaeel4g8x2npkj7qlvf2692l5760z5ut0ggnlrhdzsy3cvsj',
-                amount: 0.2,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqaxww2fnhrx05cghth75n0qcj59e3e2anscr0q9wyknjxtxycg07y3pevyj',
+                amount: 4.0,
             },
         ],
         expected: [
             {
-                pubkey: '038890c19f005d6f6add5fef92d37ac6b161b7fdd5c1aef6eed1d32be3f216ac4c',
-                value: 0.1,
+                pubkey: '0383dc944e61603137294829aed56c74c9b087d80f2c021b98a7fae5799000696c',
+                value: 3.0,
             },
             {
-                pubkey: '027956317130124c32afd07b3f2432a3e92c1447cf58da95491a307ae3d564535e',
-                value: 0.2,
+                pubkey: '0239f42624d5c32a77fda80ff0acee269afec601d3791803e80252ae04e4ffcf4c',
+                value: 4.0,
             },
         ],
     },
     {
+        description:
+            'Multiple outputs with labels: multiple outputs for labeled address; same recipient',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -624,58 +553,53 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 5.0,
             },
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqah4hxfsjdwyaeel4g8x2npkj7qlvf2692l5760z5ut0ggnlrhdzsy3cvsj',
-                amount: 0.2,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqaxww2fnhrx05cghth75n0qcj59e3e2anscr0q9wyknjxtxycg07y3pevyj',
+                amount: 6.0,
             },
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgq562yg7htxyg8eq60rl37uul37jy62apnf5ru62uef0eajpdfrnp5cmqndj',
-                amount: 0.3,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjyh2ju7hd5gj57jg5r9lev3pckk4n2shtzaq34467erzzdfajfggty6aa5',
+                amount: 7.0,
             },
             {
                 address:
-                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgq562yg7htxyg8eq60rl37uul37jy62apnf5ru62uef0eajpdfrnp5cmqndj',
-                amount: 0.4,
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjyh2ju7hd5gj57jg5r9lev3pckk4n2shtzaq34467erzzdfajfggty6aa5',
+                amount: 8.0,
             },
         ],
         expected: [
             {
-                pubkey: '0264f1c7e8992352d18cdbca600b9e1c3a6025050d56a3e1cc833222e4f3b59e18',
-                value: 0.1,
+                pubkey: '03f207162b1a7abc51c42017bef055e9ec1efc3d3567cb720357e2b84325db33ac',
+                value: 5.0,
             },
             {
-                pubkey: '027956317130124c32afd07b3f2432a3e92c1447cf58da95491a307ae3d564535e',
-                value: 0.2,
+                pubkey: '0239f42624d5c32a77fda80ff0acee269afec601d3791803e80252ae04e4ffcf4c',
+                value: 6.0,
             },
             {
-                pubkey: '031b90a42136fef9ff2ca192abffc7be4536dc83d4e61cf18ae078f7e92b297cce',
-                value: 0.3,
+                pubkey: '03ae1a780c04237bd577283c3ddb2e499767c3214160d5a6b0767e6b8c278bd701',
+                value: 7.0,
             },
             {
-                pubkey: '0287a82600c08a255bc97d172e10816e322967eed6a77c9f37dd926492d7fdc106',
-                value: 0.4,
+                pubkey: '03f4569fc5f69c10f0082cfbb8e072e6266ec55f69fba8cffca4cbb4c144b7e59b',
+                value: 8.0,
             },
         ],
     },
     {
+        description: 'Single recipient: use silent payments for sender change',
         privateKeys: [
             {
                 key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
@@ -686,36 +610,198 @@ export const testData = [
                 isXOnly: false,
             },
         ],
-        outpoints: [
-            {
-                txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
-                vout: 0,
-            },
-            {
-                txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
-                vout: 0,
-            },
-        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
         recipientAddresses: [
             {
                 address:
                     'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
-                amount: 0.1,
+                amount: 1.0,
             },
             {
                 address:
-                    'sp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqll5497pp2gcr4cmq0v5nv07x8u5jswmf8ap2q0kxmx8628mkqanyu63ck8',
-                amount: 0.2,
+                    'sp1qqw6vczcfpdh5nf5y2ky99kmqae0tr30hgdfg88parz50cp80wd2wqqlv6saelkk5snl4wfutyxrchpzzwm8rjp3z6q7apna59z9huq4x754e5atr',
+                amount: 2.0,
             },
         ],
         expected: [
             {
-                pubkey: '0264f1c7e8992352d18cdbca600b9e1c3a6025050d56a3e1cc833222e4f3b59e18',
-                value: 0.1,
+                pubkey: '03f207162b1a7abc51c42017bef055e9ec1efc3d3567cb720357e2b84325db33ac',
+                value: 1.0,
             },
             {
-                pubkey: '020050c52a32566c0dfb517e473c68fedce4bd4543d219348d3bbdceeeb5755e34',
-                value: 0.2,
+                pubkey: '02be368e28979d950245d742891ae6064020ba548c1e2e65a639a8bb0675d95cff',
+                value: 2.0,
+            },
+        ],
+    },
+    {
+        description: 'Single receipient: taproot input with NUMS point',
+        privateKeys: [
+            {
+                key: 'fc8716a97a48ba9a05a98ae47b5cd201a25a7fd5d8b73c203c5f7b6b6b3b6ad7',
+                isXOnly: true,
+            },
+        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        recipientAddresses: [
+            {
+                address:
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
+                amount: 1.0,
+            },
+        ],
+        expected: [
+            {
+                pubkey: '0379e79897c52935bfd97fc6e076a6431a0c7543ca8c31e0fc3cf719bb572c842d',
+                value: 1.0,
+            },
+        ],
+    },
+    {
+        description: 'Pubkey extraction from malleated p2pkh',
+        privateKeys: [
+            {
+                key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
+                isXOnly: false,
+            },
+            {
+                key: '0378e95685b74565fa56751b84a32dfd18545d10d691641b8372e32164fad66a',
+                isXOnly: false,
+            },
+            {
+                key: '72b8ae09175ca7977f04993e651d88681ed932dfb92c5158cdf0161dd23fda6e',
+                isXOnly: false,
+            },
+        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        recipientAddresses: [
+            {
+                address:
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
+                amount: 1.0,
+            },
+        ],
+        expected: [
+            {
+                pubkey: '024612cdbf845c66c7511d70aab4d9aed11e49e48cdb8d799d787101cdd0d53e4f',
+                value: 1.0,
+            },
+        ],
+    },
+    {
+        description: 'P2PKH and P2WPKH Uncompressed Keys are skipped',
+        privateKeys: [
+            {
+                key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
+                isXOnly: false,
+            },
+        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        recipientAddresses: [
+            {
+                address:
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
+                amount: 1.0,
+            },
+        ],
+        expected: [
+            {
+                pubkey: '0367fee277da9e8542b5d2e6f32d660a9bbd3f0e107c2d53638ab1d869088882d6',
+                value: 1.0,
+            },
+        ],
+    },
+    {
+        description: 'Skip invalid P2SH inputs',
+        privateKeys: [
+            {
+                key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
+                isXOnly: false,
+            },
+        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        recipientAddresses: [
+            {
+                address:
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
+                amount: 1.0,
+            },
+        ],
+        expected: [
+            {
+                pubkey: '0367fee277da9e8542b5d2e6f32d660a9bbd3f0e107c2d53638ab1d869088882d6',
+                value: 1.0,
+            },
+        ],
+    },
+    {
+        description: 'Skip invalid P2SH inputs',
+        privateKeys: [
+            {
+                key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
+                isXOnly: false,
+            },
+        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        recipientAddresses: [
+            {
+                address:
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
+                amount: 1.0,
+            },
+        ],
+        expected: [
+            {
+                pubkey: '0367fee277da9e8542b5d2e6f32d660a9bbd3f0e107c2d53638ab1d869088882d6',
+                value: 1.0,
+            },
+        ],
+    },
+    {
+        description: 'Recipient ignores unrelated outputs',
+        privateKeys: [
+            {
+                key: 'eadc78165ff1f8ea94ad7cfdc54990738a4c53f6e0507b42154201b8e5dff3b1',
+                isXOnly: true,
+            },
+            {
+                key: '0378e95685b74565fa56751b84a32dfd18545d10d691641b8372e32164fad66a',
+                isXOnly: false,
+            },
+        ],
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        recipientAddresses: [
+            {
+                address:
+                    'sp1qqgste7k9hx0qftg6qmwlkqtwuy6cycyavzmzj85c6qdfhjdpdjtdgqjuexzk6murw56suy3e0rd2cgqvycxttddwsvgxe2usfpxumr70xc9pkqwv',
+                amount: 1.0,
+            },
+        ],
+        expected: [
+            {
+                pubkey: '03f207162b1a7abc51c42017bef055e9ec1efc3d3567cb720357e2b84325db33ac',
+                value: 1.0,
             },
         ],
     },
