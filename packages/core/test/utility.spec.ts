@@ -1,10 +1,15 @@
 import {
     calculateSumOfPrivateKeys,
+    createTaggedHash,
     hashOutpoints,
     Outpoint,
     PrivateKey,
 } from '../src';
-import { inputPrivateKeys, outpoints } from './fixtures/utility';
+import {
+    createTaggedHashData,
+    inputPrivateKeys,
+    outpoints,
+} from './fixtures/utility';
 
 describe('Utility', () => {
     it.each(outpoints)(
@@ -22,6 +27,14 @@ describe('Utility', () => {
             const { keys, expected } = data;
             const sum = calculateSumOfPrivateKeys(keys);
             expect(sum.toString('hex')).toBe(expected);
+        },
+    );
+
+    it.each(createTaggedHashData)(
+        'should calculate tagged hash',
+        ({ tag, hex, expected }) => {
+            const taggedHash = createTaggedHash(tag, Buffer.from(hex, 'hex'));
+            expect(taggedHash.toString('hex')).toBe(expected);
         },
     );
 });

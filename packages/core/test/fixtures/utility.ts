@@ -115,3 +115,24 @@ export const inputPrivateKeys = [
             'ee55616ce5a93e508f03f21949ecbe70a2a0b107b6e1df5d98b4e4da4adaca1b',
     },
 ];
+
+export const createTaggedHashData = [
+    {
+        tag: 'tag',
+        hex: '0000000000000000000000000000000000000000000000000000000000000000',
+        expected:
+            '25a36caa510aee2994cd72a09782258d8621d99a9df9c5d7428ef6a7b026f7bb',
+    },
+    {
+        tag: 'tag',
+        hex: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+        expected:
+            'f5f36a052776e5652c4250f4c49a78415da4c366531839c5d27ba6aafefe3859',
+    },
+    {
+        tag: 'tag',
+        hex: '25a36caa510aee2994cd72a09782258d8621d99a9df9c5d7428ef6a7b026f7bbf5f36a052776e5652c4250f4c49a78415da4c366531839c5d27ba6aafefe3859',
+        expected:
+            'de9cd3236391a236466fbc0d3c79e62503cde0270c6df0c4a7d3d10ca94404e4',
+    },
+];

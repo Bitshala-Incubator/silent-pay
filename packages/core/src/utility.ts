@@ -18,6 +18,15 @@ export const hashOutpoints = (outpoints: Outpoint[]): Buffer => {
     return createHash('sha256').update(outpointBuffer).digest();
 };
 
+export const createTaggedHash = (tag: string, buffer: Buffer): Buffer => {
+    const tagHash = createHash('sha256').update(tag, 'utf8').digest();
+    return createHash('sha256')
+        .update(tagHash)
+        .update(tagHash)
+        .update(buffer)
+        .digest();
+};
+
 export const calculateSumOfPrivateKeys = (keys: PrivateKey[]): Buffer => {
     const negatedKeys = keys.map((key) => {
         const privateKey = Buffer.from(key.key, 'hex');
