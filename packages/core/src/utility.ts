@@ -18,6 +18,22 @@ export const hashOutpoints = (outpoints: Outpoint[]): Buffer => {
     return createHash('sha256').update(outpointBuffer).digest();
 };
 
+export const createInputHash = (
+    sumOfInputPublicKeys: Buffer,
+    outpoint: Outpoint,
+): Buffer => {
+    return createTaggedHash(
+        'BIP0352/Inputs',
+        Buffer.concat([
+            Buffer.concat([
+                Buffer.from(outpoint.txid, 'hex').reverse(),
+                serialiseUint32LE(outpoint.vout),
+            ]),
+            sumOfInputPublicKeys,
+        ]),
+    );
+};
+
 export const createTaggedHash = (tag: string, buffer: Buffer): Buffer => {
     const tagHash = createHash('sha256').update(tag, 'utf8').digest();
     return createHash('sha256')

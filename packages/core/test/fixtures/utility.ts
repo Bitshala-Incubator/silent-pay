@@ -43,6 +43,29 @@ export const outpoints = [
     },
 ];
 
+export const createInputHashData = [
+    {
+        sumOfInputPublicKeys:
+            '03853f51bef283502181e93238c8708ae27235dc51ae45a0c4053987c52fc6428b',
+        outpoint: {
+            txid: 'f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16',
+            vout: 0,
+        },
+        expected:
+            'd9a9c2445c8384c1e916faef4a997f00852b877cc959dc69dc1d2bb631eb8f5b',
+    },
+    {
+        sumOfInputPublicKeys:
+            '032562c1ab2d6bd45d7ca4d78f569999e5333dffd3ac5263924fd00d00dedc4bee',
+        outpoint: {
+            txid: 'a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d',
+            vout: 3,
+        },
+        expected:
+            '402afc065566490b102de1bf599f2f0e045d1379c31945e69ea55f366664a1b1',
+    },
+];
+
 export const inputPrivateKeys = [
     {
         keys: [

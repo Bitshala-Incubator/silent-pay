@@ -2,11 +2,13 @@ import {
     calculateSumOfPrivateKeys,
     createTaggedHash,
     hashOutpoints,
+    createInputHash,
     Outpoint,
     PrivateKey,
 } from '../src';
 import {
     createTaggedHashData,
+    createInputHashData,
     inputPrivateKeys,
     outpoints,
 } from './fixtures/utility';
@@ -35,6 +37,17 @@ describe('Utility', () => {
         ({ tag, hex, expected }) => {
             const taggedHash = createTaggedHash(tag, Buffer.from(hex, 'hex'));
             expect(taggedHash.toString('hex')).toBe(expected);
+        },
+    );
+
+    it.each(createInputHashData)(
+        'should calculate input hash',
+        ({ sumOfInputPublicKeys, outpoint, expected }) => {
+            const inputHash = createInputHash(
+                Buffer.from(sumOfInputPublicKeys, 'hex'),
+                outpoint,
+            );
+            expect(inputHash.toString('hex')).toBe(expected);
         },
     );
 });
