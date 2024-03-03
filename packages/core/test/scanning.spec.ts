@@ -1,31 +1,31 @@
-import { scanOutputs, LabelMap } from '../src';
+import { scanOutputs } from '../src';
 import { Buffer } from 'buffer';
 import { testData } from './fixtures/scanning';
 
 describe('Scanning', () => {
     it.each(testData)(
-        'should pass',
+        'should scan outputs and return the expected tweaks: $description',
         ({
             scanPrivateKey,
             spendPublicKey,
             sumOfInputPublicKeys,
-            outpointHash,
+            inputHash,
             outputs,
             labels,
-            matches,
+            expected,
         }) => {
             const result = scanOutputs(
                 Buffer.from(scanPrivateKey, 'hex'),
                 Buffer.from(spendPublicKey, 'hex'),
                 Buffer.from(sumOfInputPublicKeys, 'hex'),
-                Buffer.from(outpointHash, 'hex'),
+                Buffer.from(inputHash, 'hex'),
                 outputs.map((output) => Buffer.from(output, 'hex')),
-                labels as unknown as LabelMap,
+                labels,
             );
 
             expect(result).toStrictEqual(
                 new Map(
-                    Object.entries(matches).map(([output, tweak]) => [
+                    Object.entries(expected).map(([output, tweak]) => [
                         output,
                         Buffer.from(tweak as string, 'hex'),
                     ]),

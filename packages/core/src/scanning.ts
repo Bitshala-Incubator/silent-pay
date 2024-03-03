@@ -1,7 +1,6 @@
-import { serialiseUint32 } from './utility.ts';
+import { createTaggedHash, serialiseUint32 } from './utility.ts';
 import { LabelMap } from './interface.ts';
 import secp256k1 from 'secp256k1';
-import createHash from 'create-hash';
 import { Buffer } from 'buffer';
 
 // Handle additional label-related logic
@@ -78,13 +77,13 @@ export const scanOutputs = (
     scanPrivateKey: Buffer,
     spendPublicKey: Buffer,
     sumOfInputPublicKeys: Buffer,
-    outpointHash: Buffer,
+    inputHash: Buffer,
     outputs: Buffer[],
     labels?: LabelMap,
 ): Map<string, Buffer> => {
     const ecdhSecret = secp256k1.publicKeyTweakMul(
         sumOfInputPublicKeys,
-        secp256k1.privateKeyTweakMul(scanPrivateKey, outpointHash),
+        secp256k1.privateKeyTweakMul(scanPrivateKey, inputHash),
         true,
     );
 
@@ -94,9 +93,10 @@ export const scanOutputs = (
     let counterIncrement = 0;
 
     do {
-        const tweak = createHash('sha256')
-            .update(Buffer.concat([ecdhSecret, serialiseUint32(n)]))
-            .digest();
+        const tweak = createTaggedHash(
+            'BIP0352/SharedSecret',
+            Buffer.concat([ecdhSecret, serialiseUint32(n)]),
+        );
         counterIncrement = processTweak(
             spendPublicKey,
             tweak,
