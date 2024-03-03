@@ -27,14 +27,14 @@ describe('Encoding', () => {
 
     it.each(labelled)(
         'should create a labeled silent payment address',
-        (data) => {
+        ({ scanPrivKey, spendPubKey, label, address }) => {
             expect(
                 createLabeledSilentPaymentAddress(
-                    Buffer.from(data.scanKey, 'hex'),
-                    Buffer.from(data.spendKey, 'hex'),
-                    Buffer.from(data.label, 'hex'),
+                    Buffer.from(scanPrivKey, 'hex'),
+                    Buffer.from(spendPubKey, 'hex'),
+                    label,
                 ),
-            ).toBe(data.address);
+            ).toBe(address);
         },
     );
 });

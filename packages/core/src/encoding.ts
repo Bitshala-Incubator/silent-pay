@@ -3,14 +3,15 @@ import secp256k1 from 'secp256k1';
 import { Buffer } from 'buffer';
 import { Network } from 'bitcoinjs-lib';
 import { bitcoin } from 'bitcoinjs-lib/src/networks';
+import { createTaggedHash, serialiseUint32 } from './utility';
 
 export const encodeSilentPaymentAddress = (
-    scanKey: Uint8Array,
-    spendKey: Uint8Array,
+    scanPubKey: Uint8Array,
+    spendPubKey: Uint8Array,
     network: Network = bitcoin,
     version: number = 0,
 ): string => {
-    const data = bech32m.toWords(Buffer.concat([scanKey, spendKey]));
+    const data = bech32m.toWords(Buffer.concat([scanPubKey, spendPubKey]));
     data.unshift(version);
 
     return bech32m.encode(hrpFromNetwork(network), data, 1023);
@@ -35,14 +36,28 @@ export const decodeSilentPaymentAddress = (
 };
 
 export const createLabeledSilentPaymentAddress = (
-    scanKey: Uint8Array,
-    spendKey: Uint8Array,
-    m: Buffer,
+    scanPrivKey: Uint8Array,
+    spendPubKey: Uint8Array,
+    m: number,
     network: Network = bitcoin,
     version: number = 0,
 ) => {
-    spendKey = secp256k1.publicKeyTweakAdd(spendKey, m, true);
-    return encodeSilentPaymentAddress(scanKey, spendKey, network, version);
+    const label = createTaggedHash(
+        'BIP0352/Label',
+        Buffer.concat([scanPrivKey, serialiseUint32(m)]),
+    );
+    const scanPubKey = secp256k1.publicKeyCreate(scanPrivKey);
+    const tweakedSpendPubKey = secp256k1.publicKeyTweakAdd(
+        spendPubKey,
+        label,
+        true,
+    );
+    return encodeSilentPaymentAddress(
+        scanPubKey,
+        tweakedSpendPubKey,
+        network,
+        version,
+    );
 };
 
 const hrpFromNetwork = (network: Network): string => {
