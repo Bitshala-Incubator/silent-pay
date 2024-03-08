@@ -48,4 +48,16 @@ describe('Transaction', () => {
             expect(transaction.locktime).toBe(tx.raw.locktime);
         },
     );
+
+    it.each(validTransactions)(
+        'gets the Public Key from Inputs of a $description',
+        (tx) => {
+            const transaction = Transaction.fromHex(tx.hex);
+            const receivedInPubkeys = tx.raw.ins.map((_, index) => {
+                const PK = transaction.getPublicKeyFromInput(index);
+                return PK ? PK?.toString('hex') : PK;
+            });
+            expect(receivedInPubkeys).toStrictEqual(tx.raw.inPubkeys);
+        },
+    );
 });

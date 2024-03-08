@@ -126,4 +126,37 @@ export class Transaction {
 
         return null;
     }
+
+    getPublicKeyFromInput(index: number): Buffer | null {
+        const input = this.inputs[index];
+
+        const scriptVector: Buffer[] = [];
+        const buffer = input.script;
+        for (let offset = 0; offset < buffer.byteLength; ) {
+            const sigItemLen = readVarInt(buffer, offset);
+            offset += encodingLength(sigItemLen);
+            scriptVector.push(buffer.subarray(offset, offset + sigItemLen));
+            offset += sigItemLen;
+        }
+
+        // p2pkh
+        if (scriptVector.length === 2) {
+            return scriptVector[1];
+        }
+
+        // p2wpkh
+        if (scriptVector.length == 0 && input.witness.length === 2) {
+            return input.witness[1];
+        }
+
+        // p2sh-p2wpkh
+        if (
+            scriptVector.length == 3 &&
+            input.script[0] === 0x00 &&
+            input.witness.length === 2
+        ) {
+            return input.witness[1];
+        }
+        return null;
+    }
 }
