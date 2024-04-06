@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/wallet"
+    "outDir": "../../dist/wallet",
+    "noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["**/*spec.ts"]

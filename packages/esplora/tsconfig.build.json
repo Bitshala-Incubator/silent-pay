@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/level"
+    "outDir": "../../dist/level",
+    "noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["**/*spec.ts"]
