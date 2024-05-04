@@ -24,7 +24,7 @@ export const testData = [
         ],
         expected: [
             {
-                pubkey: '033e9fce73d4e77a4809908e3c3a2e54ee147b9312dc5044a193d1fc85de46e3c1',
+                pubkey: '3e9fce73d4e77a4809908e3c3a2e54ee147b9312dc5044a193d1fc85de46e3c1',
                 value: 1.0,
             },
         ],
