@@ -79,3 +79,14 @@ export const readVarInt = (buffer: Buffer, offset: number = 0): number => {
 export const encodingLength = (n: number) => {
     return n < 0xfd ? 1 : n <= 0xffff ? 3 : n <= 0xffffffff ? 5 : 9;
 };
+
+export const isPubKey = (testVector: Buffer): boolean => {
+    if (
+        testVector &&
+        (testVector.length == 33 || testVector.length == 65) &&
+        secp256k1.publicKeyVerify(testVector)
+    ) {
+        return true;
+    }
+    return false;
+};
