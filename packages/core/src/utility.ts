@@ -81,12 +81,8 @@ export const encodingLength = (n: number) => {
 };
 
 export const isPubKey = (testVector: Buffer): boolean => {
-    if (
-        testVector &&
+    return (
         (testVector.length == 33 || testVector.length == 65) &&
         secp256k1.publicKeyVerify(testVector)
-    ) {
-        return true;
-    }
-    return false;
+    );
 };
