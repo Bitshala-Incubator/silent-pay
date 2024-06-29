@@ -20,6 +20,9 @@ export const validTransactions = [
                     script: '76a914c42e7ef92fdb603af844d064faad95db9bcdfd3d88ac',
                 },
             ],
+            inPubkeys: [
+                '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798',
+            ],
         },
     },
     {
@@ -53,6 +56,10 @@ export const validTransactions = [
                     value: 150000,
                     script: 'a9147ccb85f0ab2d599bc17246c98babd5a20b1cdc7687',
                 },
+            ],
+            inPubkeys: [
+                '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798',
+                null,
             ],
         },
     },
@@ -247,6 +254,9 @@ export const validTransactions = [
                     script: '4effffffff01',
                 },
             ],
+            inPubkeys: [
+                '02d5ede09a8ae667d0f855ef90325e27f6ce35bbe60a1e6e87af7f5b3c652140fd',
+            ],
         },
     },
     {
@@ -367,6 +377,9 @@ export const validTransactions = [
                     value: 60000,
                     script: '76a914851a33a5ef0d4279bd5854949174e2c65b1d450088ac',
                 },
+            ],
+            inPubkeys: [
+                '038de63cf582d058a399a176825c045672d5ff8ea25b64d28d4375dcdb14c02b2b',
             ],
         },
     },
@@ -571,6 +584,9 @@ export const validTransactions = [
                     script: '76a914851a33a5ef0d4279bd5854949174e2c65b1d450088ac',
                 },
             ],
+            inPubkeys: [
+                '038de63cf582d058a399a176825c045672d5ff8ea25b64d28d4375dcdb14c02b2b',
+            ],
         },
     },
     {
@@ -596,6 +612,9 @@ export const validTransactions = [
                     value: 60000,
                     script: '76a914851a33a5ef0d4279bd5854949174e2c65b1d450088ac',
                 },
+            ],
+            inPubkeys: [
+                '038de63cf582d058a399a176825c045672d5ff8ea25b64d28d4375dcdb14c02b2b',
             ],
         },
     },
