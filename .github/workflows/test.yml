@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Start test containers
-        run: docker-compose -f "./dev/docker-compose.yaml" up -d
+        run: docker compose -f "./dev/docker-compose.yaml" up -d
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -44,7 +44,7 @@ jobs:
           BITCOIN_RPC_HOST: localhost:18443
       - name: Fetch esplora logs
         if: always()
-        run: docker-compose -f "./dev/docker-compose.yaml" logs esplora
+        run: docker compose -f "./dev/docker-compose.yaml" logs esplora
       - name: Stop test containers
         if: always()
-        run: docker-compose -f "./dev/docker-compose.yaml" down
+        run: docker compose -f "./dev/docker-compose.yaml" down
