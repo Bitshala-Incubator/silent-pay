@@ -114,3 +114,29 @@ export const createTaggedHashData = [
             'de9cd3236391a236466fbc0d3c79e62503cde0270c6df0c4a7d3d10ca94404e4',
     },
 ];
+
+export const publicKeysTestData = [
+    {
+        publickKey: '',
+        valid: false,
+    },
+    {
+        publickKey: 'random string',
+        valid: false,
+    },
+    {
+        publickKey:
+            '02d5ede09a8ae667d0f855ef90325e27f6ce35bbe60a1e6e87af7f5b3c652140fd',
+        valid: true,
+    },
+    {
+        publickKey:
+            '3045022100d269531f120f377ed2f94f42bef893ff2fe6544ac97fb477fa291bc6cfb7647e02200983f6a5bbd4ce6cf97f571995634805a7324cc5d8353ed954fa62477b0fcd0901',
+        valid: false,
+    },
+    {
+        publickKey:
+            '21038de63cf582d058a399a176825c045672d5ff8ea25b64d28d4375dcdb14c02b2bac',
+        valid: false,
+    },
+];

@@ -3,11 +3,13 @@ import {
     createTaggedHash,
     createInputHash,
     PrivateKey,
+    isPubKey,
 } from '../src';
 import {
     createTaggedHashData,
     createInputHashData,
     inputPrivateKeys,
+    publicKeysTestData,
 } from './fixtures/utility';
 
 describe('Utility', () => {
@@ -36,6 +38,15 @@ describe('Utility', () => {
                 outpoint,
             );
             expect(inputHash.toString('hex')).toBe(expected);
+        },
+    );
+
+    it.each(publicKeysTestData)(
+        'should test for public key validity',
+        ({ publickKey, valid }) => {
+            expect(isPubKey(Buffer.from(publickKey, 'hex'))).toStrictEqual(
+                valid,
+            );
         },
     );
 });
