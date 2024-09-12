@@ -1,5 +1,5 @@
 import { WITNESS_FLAG, WITNESS_MARKER } from './constants.ts';
-import { encodingLength, readVarInt } from './utility.ts';
+import { encodingLength, isPubKey, readVarInt } from './utility.ts';
 import { Input, Output } from './interface.ts';
 import { Buffer } from 'buffer';
 
@@ -124,6 +124,46 @@ export class Transaction {
             return output.script.subarray(1, 34);
         }
 
+        return null;
+    }
+
+    getPublicKeyFromInput(index: number): Buffer | null {
+        const input = this.inputs[index];
+
+        const scriptVector: Buffer[] = [];
+        const buffer = input.script;
+        for (let offset = 0; offset < buffer.byteLength; ) {
+            const sigItemLen = readVarInt(buffer, offset);
+            offset += encodingLength(sigItemLen);
+            scriptVector.push(buffer.subarray(offset, offset + sigItemLen));
+            offset += sigItemLen;
+        }
+
+        // p2pkh
+        if (scriptVector.length === 2 && isPubKey(scriptVector[1])) {
+            return scriptVector[1];
+        }
+
+        // p2wpkh
+        if (
+            scriptVector.length == 0 &&
+            input.witness.length === 2 &&
+            isPubKey(input.witness[1])
+        ) {
+            return input.witness[1];
+        }
+
+        // p2sh-p2wpkh
+        if (
+            input.script.length === 23 &&
+            scriptVector.length == 1 &&
+            scriptVector[0][0] === 0x00 &&
+            scriptVector[0][1] === 0x14 &&
+            input.witness.length === 2 &&
+            isPubKey(input.witness[1])
+        ) {
+            return input.witness[1];
+        }
         return null;
     }
 }
