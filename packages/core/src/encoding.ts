@@ -3,7 +3,13 @@ import secp256k1 from 'secp256k1';
 import { Buffer } from 'buffer';
 import { Network } from 'bitcoinjs-lib';
 import { bitcoin } from 'bitcoinjs-lib/src/networks';
-import { createTaggedHash, serialiseUint32 } from './utility';
+import {
+    createTaggedHash,
+    encodingLength,
+    readVarInt,
+    serialiseUint32,
+} from './utility';
+import { SilentBlock } from './interface';
 
 export const encodeSilentPaymentAddress = (
     scanPubKey: Uint8Array,
@@ -62,4 +68,41 @@ export const createLabeledSilentPaymentAddress = (
 
 const hrpFromNetwork = (network: Network): string => {
     return network.bech32 === 'bc' ? 'sp' : 'tsp';
+};
+
+export const parseSilentBlock = (data: Buffer): SilentBlock => {
+    const type = data.readUInt8(0);
+    const transactions = [];
+    let cursor = 1;
+    const count = readVarInt(data, cursor);
+    cursor += encodingLength(count);
+
+    for (let i = 0; i < count; i++) {
+        const txid = data.subarray(cursor, cursor + 32).toString('hex');
+        cursor += 32;
+
+        const outputs = [];
+        const outputCount = readVarInt(data, cursor);
+        cursor += encodingLength(outputCount);
+
+        for (let j = 0; j < outputCount; j++) {
+            const value = Number(data.readBigUInt64BE(cursor));
+            cursor += 8;
+
+            const pubKey = data.subarray(cursor, cursor + 32).toString('hex');
+            cursor += 32;
+
+            const vout = data.readUint32BE(cursor);
+            cursor += 4;
+
+            outputs.push({ value, pubKey, vout });
+        }
+
+        const scanTweak = data.subarray(cursor, cursor + 33).toString('hex');
+        cursor += 33;
+
+        transactions.push({ txid, outputs, scanTweak });
+    }
+
+    return { type, transactions };
 };

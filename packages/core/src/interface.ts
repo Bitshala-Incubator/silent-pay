@@ -29,3 +29,16 @@ export type Input = {
     sequence: number;
     witness: Buffer[];
 };
+
+export type SilentBlock = {
+    type: number;
+    transactions: {
+        txid: string;
+        outputs: {
+            value: number;
+            pubKey: string;
+            vout: number;
+        }[];
+        scanTweak: string;
+    }[];
+};
