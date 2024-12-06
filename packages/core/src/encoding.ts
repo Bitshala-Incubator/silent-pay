@@ -1,20 +1,21 @@
-import { bech32m } from 'bech32';
-import secp256k1 from 'secp256k1';
-import { Buffer } from 'buffer';
-import { Network } from 'bitcoinjs-lib';
-import { bitcoin } from 'bitcoinjs-lib/src/networks';
+import { bech32m } from 'bech32'; // Import the Bech32 library for encoding and decoding addresses
+import secp256k1 from 'secp256k1'; // Import the Secp256k1 library for cryptographic operations
+import { Buffer } from 'buffer'; // Import the Buffer library for handling binary data
+import { Network } from 'bitcoinjs-lib'; // Import the BitcoinJS library for working with Bitcoin networks and addresses
+import { bitcoin } from 'bitcoinjs-lib/src/networks'; // Import the default Bitcoin network settings
 import {
     createTaggedHash,
     encodingLength,
     readVarInt,
     serialiseUint32,
-} from './utility';
-import { SilentBlock } from './interface';
+} from './utility'; // Import utility functions for creating and parsing silent payment addresses
+import { SilentBlock } from './interface'; // Import the interface for handling silent payment blocks
 
+// Export a function to encode a silent payment address using the provided scan and spend public keys, as well as the specified version and network settings
 export const encodeSilentPaymentAddress = (
     scanPubKey: Uint8Array,
     spendPubKey: Uint8Array,
-    network: Network = bitcoin,
+    network: Network = bitcoin, // Set the default network to Bitcoin if not provided
     version: number = 0,
 ): string => {
     const data = bech32m.toWords(Buffer.concat([scanPubKey, spendPubKey]));
@@ -23,9 +24,10 @@ export const encodeSilentPaymentAddress = (
     return bech32m.encode(hrpFromNetwork(network), data, 1023);
 };
 
+// Export a function to decode a silent payment address using the provided network settings
 export const decodeSilentPaymentAddress = (
     address: string,
-    network: Network = bitcoin,
+    network: Network = bitcoin, // Set the default network to Bitcoin if not provided
 ): { scanKey: Buffer; spendKey: Buffer } => {
     const { prefix, words } = bech32m.decode(address, 1023);
     if (prefix != hrpFromNetwork(network)) throw new Error('Invalid prefix!');
@@ -41,11 +43,12 @@ export const decodeSilentPaymentAddress = (
     };
 };
 
+// Export a function to create a labeled silent payment address using the provided scan private key, spend public key, m value, version, and network settings
 export const createLabeledSilentPaymentAddress = (
     scanPrivKey: Uint8Array,
     spendPubKey: Uint8Array,
     m: number,
-    network: Network = bitcoin,
+    network: Network = bitcoin, // Set the default network to Bitcoin if not provided
     version: number = 0,
 ) => {
     const label = createTaggedHash(
@@ -66,10 +69,12 @@ export const createLabeledSilentPaymentAddress = (
     );
 };
 
+// Define a helper function to determine the prefix for a given Bitcoin network based on its Bech32 encoding settings
 const hrpFromNetwork = (network: Network): string => {
     return network.bech32 === 'bc' ? 'sp' : 'tsp';
 };
 
+// Export a function to parse a silent payment block from the provided data buffer using utility functions
 export const parseSilentBlock = (data: Buffer): SilentBlock => {
     const type = data.readUInt8(0);
     const transactions = [];
