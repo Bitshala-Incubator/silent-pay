@@ -7,8 +7,13 @@ import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { ECPairFactory } from 'ecpair';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
-import { createOutputs, encodeSilentPaymentAddress } from '@silent-pay/core';
+import {
+    createOutputs,
+    encodeSilentPaymentAddress,
+    SilentBlock,
+} from '@silent-pay/core';
 import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
+import { deriveAddressFromPubKey } from './utils.ts';
 
 initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -326,5 +331,25 @@ export class Wallet {
         );
         await this.db.saveSilentPaymentAddress(address);
         return address;
+    }
+
+    async scanSilentBlock(silentBlock: SilentBlock): Promise<void> {
+        const addressesToScan: string[] = [];
+        for (const transaction of silentBlock.transactions) {
+            for (const output of transaction.outputs) {
+                const address = deriveAddressFromPubKey(output.pubKey);
+                if (address) {
+                    addressesToScan.push(address);
+                }
+            }
+        }
+        const coins = (
+            await Promise.all(
+                addressesToScan.map((address) =>
+                    this.network.getUTXOs(address),
+                ),
+            )
+        ).reduce((acc, utxos) => [...acc, ...utxos], []);
+        await this.db.saveUnspentCoins(coins);
     }
 }
