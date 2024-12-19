@@ -1,6 +1,6 @@
-import { scanOutputs } from '../src';
+import { LabelMap, scanOutputs, scanOutputsWithTweak } from '../src';
 import { Buffer } from 'buffer';
-import { testData } from './fixtures/scanning';
+import { testData, scanTweakVectors } from './fixtures/scanning';
 
 describe('Scanning', () => {
     it.each(testData)(
@@ -20,7 +20,7 @@ describe('Scanning', () => {
                 Buffer.from(sumOfInputPublicKeys, 'hex'),
                 Buffer.from(inputHash, 'hex'),
                 outputs.map((output) => Buffer.from(output, 'hex')),
-                labels,
+                labels as LabelMap,
             );
 
             expect(result).toStrictEqual(
@@ -31,6 +31,34 @@ describe('Scanning', () => {
                     ]),
                 ),
             );
+        },
+    );
+
+    it.each(scanTweakVectors)(
+        'should scan using scan tweak - $description',
+        ({
+            scanPrivateKey,
+            spendPublicKey,
+            tweak,
+            outputs,
+            expectedTweakHex,
+        }) => {
+            const res = scanOutputsWithTweak(
+                Buffer.from(scanPrivateKey, 'hex'),
+                Buffer.from(spendPublicKey, 'hex'),
+                Buffer.from(tweak, 'hex'),
+                outputs.map((o) => Buffer.from(o, 'hex')),
+            );
+
+            if (!expectedTweakHex) {
+                expect(res.size).toBe(0);
+            } else {
+                expect(res.size).toBeGreaterThan(0);
+                for (const [output, foundTweak] of res) {
+                    expect(foundTweak.toString('hex')).toBe(expectedTweakHex);
+                    expect(output).toBeDefined();
+                }
+            }
         },
     );
 });

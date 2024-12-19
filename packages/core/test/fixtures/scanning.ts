@@ -542,3 +542,45 @@ export const testData = [
         expected: {},
     },
 ];
+
+export const scanTweakVectors = [
+    {
+        description: 'single matching output',
+        scanPrivateKey:
+            '38658693c017c46fd6b8bb94b8766c123cd5baf6026338305b6f59f82b36f9c0',
+        spendPublicKey:
+            '02833085c9a716d36b467552c00d6aa8bd42e39adbe98b05bc203110177192f702',
+        tweak: '02ccd442a997b40661a9a1e233884986a9c970f5da3b68514c6ea2533b708e2ae1',
+        outputs: [
+            '025a90a5fad7ab4d32e41fd02de786f7af3ecbe85bd18784e51e89a97c8693ca3c',
+        ],
+        expectedTweakHex:
+            '635aaddb7a1f7f64a6b78ddf47772ae987f6e29b79bb4eebbf1826f21af25e39',
+    },
+    {
+        description: 'no matching outputs',
+        scanPrivateKey:
+            '38658693c017c46fd6b8bb94b8766c123cd5baf6026338305b6f59f82b36f9c0',
+        spendPublicKey:
+            '02833085c9a716d36b467552c00d6aa8bd42e39adbe98b05bc203110177192f702',
+        tweak: '02ccd442a997b40661a9a1e233884986a9c970f5da3b68514c6ea2533b708e2ae1',
+        outputs: [
+            '03aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1',
+        ],
+        expectedTweakHex: null,
+    },
+    {
+        description: 'multiple matching outputs',
+        scanPrivateKey:
+            '38658693c017c46fd6b8bb94b8766c123cd5baf6026338305b6f59f82b36f9c0',
+        spendPublicKey:
+            '02833085c9a716d36b467552c00d6aa8bd42e39adbe98b05bc203110177192f702',
+        tweak: '02ccd442a997b40661a9a1e233884986a9c970f5da3b68514c6ea2533b708e2ae1',
+        outputs: [
+            '025a90a5fad7ab4d32e41fd02de786f7af3ecbe85bd18784e51e89a97c8693ca3c',
+            '025a90a5fad7ab4d32e41fd02de786f7af3ecbe85bd18784e51e89a97c8693ca3c',
+        ],
+        expectedTweakHex:
+            '635aaddb7a1f7f64a6b78ddf47772ae987f6e29b79bb4eebbf1826f21af25e39',
+    },
+];
