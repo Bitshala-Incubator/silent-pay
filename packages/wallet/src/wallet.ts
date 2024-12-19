@@ -7,7 +7,7 @@ import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { ECPairFactory } from 'ecpair';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
-import { createOutputs, encodeSilentPaymentAddress } from '@silent-pay/core';
+import { createOutputs, encodeSilentPaymentAddress, SilentBlock, scanOutputsWithTweak } from '@silent-pay/core';
 import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
 
 initEccLib(ecc);
@@ -326,5 +326,58 @@ export class Wallet {
         );
         await this.db.saveSilentPaymentAddress(address);
         return address;
+    }
+
+    async scanSilentBlock(silentBlock: SilentBlock): Promise<void> {
+        const dustLimit = 546;
+        const matchedUTXOs: Coin[] = [];
+    
+        const coinType = this.network.network.bech32 === 'bc' ? 0 : 1;
+        const scanKey = this.masterKey.derivePath(`m/352'/${coinType}'/0'/1'/0`);
+        const spendKey = this.masterKey.derivePath(`m/352'/${coinType}'/0'/0'/0`);
+        
+        const scanPrivateKey = scanKey.privateKey;
+        const scanPublicKey = scanKey.publicKey;
+        const spendPublicKey = spendKey.publicKey;
+    
+        for (const transaction of silentBlock.transactions) {
+            const outputs = transaction.outputs.filter((output) => output.value >= dustLimit);
+    
+            if (outputs.length === 0) continue;
+    
+            const outputPubKeys = outputs.map((output) => Buffer.from(output.pubKey, 'hex'));
+    
+            const scanTweak = Buffer.from(transaction.scanTweak, 'hex');
+    
+            const matches = scanOutputsWithTweak(
+                scanPrivateKey,
+                spendPublicKey,
+                scanTweak,
+                outputPubKeys,
+            );
+    
+            if (matches.size === 0) continue;
+    
+            for (const pubKeyHex of matches.keys()) {
+                const output = outputs.find(
+                    (output) => output.pubKey === pubKeyHex
+                );
+                if (output) {
+                    matchedUTXOs.push(new Coin({
+                        txid: transaction.txid,
+                        vout: output.vout,
+                        value: output.value,
+                        address: encodeSilentPaymentAddress(scanPublicKey, spendPublicKey),
+                        status: {
+                            isConfirmed: true,
+                        },
+                    }));
+                }
+            }
+        }
+    
+        if (matchedUTXOs.length === 0) return;
+
+        await this.db.saveUnspentCoins(matchedUTXOs);
     }
 }
