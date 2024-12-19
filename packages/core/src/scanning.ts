@@ -73,25 +73,15 @@ const processTweak = (
     return 0; // No counter increment
 };
 
-export const scanOutputs = (
-    scanPrivateKey: Buffer,
+function scanOutputsUsingSecret(
+    ecdhSecret: Uint8Array,
     spendPublicKey: Buffer,
-    sumOfInputPublicKeys: Buffer,
-    inputHash: Buffer,
     outputs: Buffer[],
     labels?: LabelMap,
-): Map<string, Buffer> => {
-    const ecdhSecret = secp256k1.publicKeyTweakMul(
-        sumOfInputPublicKeys,
-        secp256k1.privateKeyTweakMul(scanPrivateKey, inputHash),
-        true,
-    );
-
-    // output to tweak data map
+): Map<string, Buffer> {
     const matches = new Map<string, Buffer>();
     let n = 0;
     let counterIncrement = 0;
-
     do {
         const tweak = createTaggedHash(
             'BIP0352/SharedSecret',
@@ -108,4 +98,48 @@ export const scanOutputs = (
     } while (counterIncrement > 0 && outputs.length > 0);
 
     return matches;
+}
+
+export const scanOutputs = (
+    scanPrivateKey: Buffer,
+    spendPublicKey: Buffer,
+    sumOfInputPublicKeys: Buffer,
+    inputHash: Buffer,
+    outputs: Buffer[],
+    labels?: LabelMap,
+): Map<string, Buffer> => {
+    const ecdhSecret = secp256k1.publicKeyTweakMul(
+        sumOfInputPublicKeys,
+        secp256k1.privateKeyTweakMul(scanPrivateKey, inputHash),
+        true,
+    );
+
+    return scanOutputsUsingSecret(ecdhSecret, spendPublicKey, outputs, labels);
+};
+
+export const scanOutputsWithTweak = (
+    scanPrivateKey: Buffer,
+    spendPublicKey: Buffer,
+    scanTweak: Buffer,
+    outputs: Buffer[],
+    labels?: LabelMap,
+): Map<string, Buffer> => {
+    if (scanTweak.length === 33) {
+        // Use publicKeyTweakMul for compressed pubkey
+        const ecdhSecret = secp256k1.publicKeyTweakMul(
+            scanTweak,
+            scanPrivateKey,
+            true,
+        );
+        return scanOutputsUsingSecret(
+            ecdhSecret,
+            spendPublicKey,
+            outputs,
+            labels,
+        );
+    } else {
+        throw new Error(
+            `Expected scanTweak to be either 33-byte compressed public key, got ${scanTweak.length}`,
+        );
+    }
 };

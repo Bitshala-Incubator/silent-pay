@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import { BitcoinRpcClient } from './helpers/bitcoin-rpc-client';
 import { Wallet } from '../src';
-import { WalletDB } from '@silent-pay/level';
-import { EsploraClient } from '@silent-pay/esplora';
+import { WalletDB } from '@silent-pay/level/src';
+import { EsploraClient } from '@silent-pay/esplora/src';
+import { parsedSilentBlock } from './helpers/silent-block.fixtures';
 
 describe('Wallet', () => {
     let wallet: Wallet;
@@ -154,6 +155,43 @@ describe('Wallet', () => {
         const tx = await bitcoinRpcClient.getMempoolEntry(txid);
         expect(tx).toBeDefined();
     });
+
+    it('should match UTXOs from a silent block without relying on db', async () => {
+        const scanKey = wallet['masterKey'].derivePath(
+            `m/352'/${wallet.getCoinType()}'/0'/1'/0`,
+        );
+        const spendKey = wallet['masterKey'].derivePath(
+            `m/352'/${wallet.getCoinType()}'/0'/0'/0`,
+        );
+
+        expect(scanKey.privateKey).toBeDefined();
+
+        const matchedUTXOs = wallet['matchSilentBlockOutputs'](
+            parsedSilentBlock,
+            scanKey.privateKey!,
+            spendKey.publicKey,
+        );
+        expect(matchedUTXOs.length).toBeGreaterThan(0);
+        expect(matchedUTXOs[0]).toHaveProperty('txid');
+    });
+
+    it.each(parsedSilentBlock.transactions)(
+        'should scan silent block transaction %s and update UTXOs',
+        async (transaction) => {
+            await wallet.scanSilentBlock(parsedSilentBlock);
+            const utxos = await walletDB.getUnspentCoins();
+
+            expect(utxos).toContainEqual(
+                expect.objectContaining({
+                    txid: transaction.txid,
+                    vout: transaction.outputs[0].vout,
+                    value: transaction.outputs[0].value,
+                    address: expect.stringMatching(/^bcrt1p/),
+                    status: { isConfirmed: true },
+                }),
+            );
+        },
+    );
 
     afterAll(async () => {
         await wallet.close();

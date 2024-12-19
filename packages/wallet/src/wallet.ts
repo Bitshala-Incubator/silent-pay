@@ -7,8 +7,14 @@ import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { ECPairFactory } from 'ecpair';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
-import { createOutputs, encodeSilentPaymentAddress } from '@silent-pay/core';
+import {
+    createOutputs,
+    encodeSilentPaymentAddress,
+    SilentBlock,
+    scanOutputsWithTweak,
+} from '@silent-pay/core';
 import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
+import { bitcoin } from 'bitcoinjs-lib/src/networks';
 
 initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -307,16 +313,19 @@ export class Wallet {
         return tx.getId();
     }
 
+    getCoinType(): number {
+        return this.network.network.bech32 === bitcoin.bech32 ? 0 : 1;
+    }
+
     async generateSilentPaymentAddress(): Promise<string> {
         let address = await this.db.getSilentPaymentAddress();
         if (address) return address;
 
-        const coinType = this.network.network.bech32 === 'bc' ? 0 : 1;
         const spendKey = this.masterKey.derivePath(
-            `m/352'/${coinType}'/0'/0'/0`,
+            `m/352'/${this.getCoinType()}'/0'/0'/0`,
         );
         const scanKey = this.masterKey.derivePath(
-            `m/352'/${coinType}'/0'/1'/0`,
+            `m/352'/${this.getCoinType()}'/0'/1'/0`,
         );
 
         address = encodeSilentPaymentAddress(
@@ -326,5 +335,79 @@ export class Wallet {
         );
         await this.db.saveSilentPaymentAddress(address);
         return address;
+    }
+
+    private matchSilentBlockOutputs(
+        silentBlock: SilentBlock,
+        scanPrivateKey: Buffer,
+        spendPublicKey: Buffer,
+    ): Coin[] {
+        const matchedUTXOs: Coin[] = [];
+
+        for (const transaction of silentBlock.transactions) {
+            const outputs = transaction.outputs;
+
+            if (outputs.length === 0) continue;
+
+            const outputPubKeys = outputs.map((output) =>
+                Buffer.from('02' + output.pubKey, 'hex'),
+            );
+
+            const scanTweak = Buffer.from(transaction.scanTweak, 'hex');
+
+            const matchedOutputs = scanOutputsWithTweak(
+                scanPrivateKey,
+                spendPublicKey,
+                scanTweak,
+                outputPubKeys,
+            );
+
+            if (matchedOutputs.size === 0) continue;
+
+            for (const pubKeyHex of matchedOutputs.keys()) {
+                const output = outputs.find(
+                    (output) => output.pubKey === pubKeyHex.slice(2),
+                );
+                if (output) {
+                    matchedUTXOs.push(
+                        new Coin({
+                            txid: transaction.txid,
+                            vout: output.vout,
+                            value: output.value,
+                            address: payments.p2tr({
+                                pubkey: toXOnly(
+                                    Buffer.from('02' + output.pubKey, 'hex'),
+                                ),
+                                network: this.network.network,
+                            }).address,
+                            status: {
+                                isConfirmed: true,
+                            },
+                        }),
+                    );
+                }
+            }
+        }
+
+        return matchedUTXOs;
+    }
+
+    async scanSilentBlock(silentBlock: SilentBlock): Promise<void> {
+        const scanKey = this.masterKey.derivePath(
+            `m/352'/${this.getCoinType()}'/0'/1'/0`,
+        );
+        const spendKey = this.masterKey.derivePath(
+            `m/352'/${this.getCoinType()}'/0'/0'/0`,
+        );
+
+        const matchedUTXOs = this.matchSilentBlockOutputs(
+            silentBlock,
+            scanKey.privateKey,
+            spendKey.publicKey,
+        );
+
+        if (matchedUTXOs.length) {
+            await this.db.saveUnspentCoins(matchedUTXOs);
+        }
     }
 }
