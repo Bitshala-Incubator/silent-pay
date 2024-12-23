@@ -8,7 +8,9 @@ import { ECPairFactory } from 'ecpair';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
 import { createOutputs, encodeSilentPaymentAddress } from '@silent-pay/core';
-import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
+import { NetworkInterface, DbInterface, Coin, CoinSelector, isP2Silent, P2Silent } from './index.ts';
+import secp256k1 from 'secp256k1';
+
 
 initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
@@ -30,6 +32,8 @@ export class Wallet {
     private receiveDepth: number = 0;
     private changeDepth: number = 0;
     private lookahead: number;
+    private scanKey: BIP32Interface;
+    private spendKey: BIP32Interface;
 
     constructor(config: WalletConfigOptions) {
         this.db = config.db;
@@ -38,33 +42,46 @@ export class Wallet {
     }
 
     async init(params?: { mnemonic?: string; password?: string }) {
-        const { mnemonic, password } = params;
+        const { mnemonic, password } = params ?? {}; // Ensure params is not undefined
         await this.db.open();
-
+    
         if (mnemonic) {
-            const seed = mnemonicToSeedSync(mnemonic).toString('hex');
-            this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
-            this.setPassword(password ?? DEFAULT_ENCRYPTION_PASSWORD);
-            for (let i = 0; i < this.lookahead; i++) {
-                await this.deriveAddress(`m/84'/0'/0'/0/${i}`);
-            }
+            await this.initializeWithMnemonic(mnemonic, password);
         } else {
-            const { encryptedPrivateKey, encryptedChainCode } =
-                await this.db.getMasterKey();
-            const { privateKey: decryptedPrivateKey } = decrypt(
-                encryptedPrivateKey,
-                password ?? DEFAULT_ENCRYPTION_PASSWORD,
-            );
-            const { privateKey: decryptedChainCode } = decrypt(
-                encryptedChainCode,
-                password ?? DEFAULT_ENCRYPTION_PASSWORD,
-            );
-            this.masterKey = bip32.fromPrivateKey(
-                decryptedPrivateKey,
-                decryptedChainCode,
-            );
+            await this.initializeFromStoredKey(password);
         }
     }
+    
+    private async initializeWithMnemonic(mnemonic: string, password?: string) {
+        const seed = mnemonicToSeedSync(mnemonic).toString('hex');
+        this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
+        this.scanKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/1'/0`);
+        this.spendKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/0'/0`);
+        this.setPassword(password ?? DEFAULT_ENCRYPTION_PASSWORD);
+    
+        for (let i = 0; i < this.lookahead; i++) {
+            await this.deriveP2WPKHAddress(`m/84'/0'/0'/0/${i}`);
+        }
+    }
+    
+    private async initializeFromStoredKey(password?: string) {
+        const { encryptedPrivateKey, encryptedChainCode } = await this.db.getMasterKey();
+    
+        const decryptedPrivateKey = decrypt(
+            encryptedPrivateKey,
+            password ?? DEFAULT_ENCRYPTION_PASSWORD
+        ).privateKey;
+    
+        const decryptedChainCode = decrypt(
+            encryptedChainCode,
+            password ?? DEFAULT_ENCRYPTION_PASSWORD
+        ).privateKey;
+    
+        this.masterKey = bip32.fromPrivateKey(decryptedPrivateKey, decryptedChainCode);
+        this.scanKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/1'/0`);
+        this.spendKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/0'/0`);
+    }
+    
 
     async close() {
         await this.db.setReceiveDepth(this.receiveDepth);
@@ -74,7 +91,7 @@ export class Wallet {
     }
 
     async setPassword(newPassword: string) {
-        if (!this.masterKey) {
+        if (!this.masterKey || !this.masterKey.privateKey) {
             throw new Error('Wallet not initialized. Please call src.init()');
         } else {
             const encryptedPrivateKey = encrypt(
@@ -91,21 +108,27 @@ export class Wallet {
         }
     }
 
-    private async deriveAddress(path: string): Promise<string> {
+    private async deriveP2WPKHAddress(path: string): Promise<string> {
         const child = this.masterKey.derivePath(path);
         const { address } = payments.p2wpkh({
             pubkey: child.publicKey,
             network: this.network.network,
         });
 
+        if (!address) {
+            throw new Error("Cannot derive P2WPKH Address")
+        }
+
         await this.db.saveAddress(address, path);
 
         return address;
     }
 
-    async deriveReceiveAddress(): Promise<string> {
+
+
+    async deriveP2WPKHReceiveAddress(): Promise<string> {
         const nextPath = `m/84'/0'/0'/0/${this.receiveDepth + this.lookahead}`;
-        await this.deriveAddress(nextPath);
+        await this.deriveP2WPKHAddress(nextPath);
         const address = await this.db.getAddressFromPath(
             `m/84'/0'/0'/0/${this.receiveDepth}`,
         );
@@ -113,9 +136,9 @@ export class Wallet {
         return address;
     }
 
-    async deriveChangeAddress(): Promise<string> {
+    async deriveP2WPKHChangeAddress(): Promise<string> {
         const path = `m/84'/0'/0'/1/${this.changeDepth}`;
-        const address = await this.deriveAddress(path);
+        const address = await this.deriveP2WPKHAddress(path);
         this.changeDepth++;
         return address;
     }
@@ -136,12 +159,53 @@ export class Wallet {
         return coins.reduce((acc, coin) => acc + coin.value, 0);
     }
 
-    private async signTransaction(psbt: Psbt, coins: Coin[]): Promise<void> {
+    private async signP2WPKHTransactionInputs(psbt: Psbt, coins: Coin[]): Promise<void> {
         for (let index = 0; index < coins.length; index++) {
             const path = await this.db.getPathFromAddress(coins[index].address);
             const privateKey = this.masterKey.derivePath(path);
             psbt.signInput(index, privateKey);
         }
+    }
+    
+    
+    private async signSilentPaymentTransactionInputs(psbt: Psbt, coins: P2Silent[]): Promise<void> {
+        const spendPrivateKey = this.spendKey.privateKey;
+        if (!spendPrivateKey) {
+            throw new Error('Spend key not initialized');
+        }
+    
+        for (let index = 0; index < coins.length; index++) {
+            const coin = coins[index];
+            const tweakedKey = secp256k1.privateKeyTweakAdd(
+                Uint8Array.from(spendPrivateKey),
+                Uint8Array.from(coin.tweakedData)
+            );
+        
+            const privateKey = bip32.fromPrivateKey(
+                Buffer.from(tweakedKey),
+                Buffer.alloc(32),
+                this.network.network
+            );
+        
+            psbt.signTaprootInput(index, privateKey);
+        }
+    }
+
+    private async getCoinsToSpend(amount: number) {
+        let coins = await this.db.getUnspentSilentPaymentCoins();
+        let balance = coins.reduce((acc, coin) => acc + coin.value, 0);
+
+        if (balance < amount) {
+            coins = await this.db.getUnspentSilentPaymentCoins();
+            balance = coins.reduce((acc, coin) => acc + coin.value, 0);
+        }
+
+        if (balance < amount) {
+            throw new Error(
+                `Insufficient funds. Available: ${balance} sats, Requested: ${amount} sats`,
+            );
+        }
+        return coins
     }
 
     async createAndSignTransaction(
@@ -151,15 +215,8 @@ export class Wallet {
             (acc, address) => acc + address.amount,
             0,
         );
-        const coins = await this.db.getUnspentCoins();
-        const totalBalance = coins.reduce((acc, coin) => acc + coin.value, 0);
 
-        if (totalAmount > totalBalance) {
-            throw new Error(
-                `Insufficient funds. Available: ${totalBalance} sats, Requested: ${totalAmount} sats`,
-            );
-        }
-
+        const coins = await this.getCoinsToSpend(totalAmount);
         const tx = new Transaction();
         const psbt = new Psbt({ network: this.network.network });
         addresses.forEach(({ address, amount }) => {
@@ -173,7 +230,7 @@ export class Wallet {
         const coinSelector = new CoinSelector(await this.network.getFeeRate());
         const { coins: selectedCoins, change } = coinSelector.select(coins, tx);
         if (change > 0) {
-            const changeAddress = await this.deriveChangeAddress();
+            const changeAddress = await this.deriveP2WPKHChangeAddress();
             psbt.addOutput({
                 address: changeAddress,
                 value: change,
@@ -184,7 +241,12 @@ export class Wallet {
             psbt.addInput(coin.toInput(this.network.network));
         }
 
-        await this.signTransaction(psbt, selectedCoins);
+        if (isP2Silent(selectedCoins)) {
+            await this.signSilentPaymentTransactionInputs(psbt, selectedCoins);
+        } else {
+            await this.signP2WPKHTransactionInputs(psbt, selectedCoins);
+        }
+        
 
         if (
             !psbt.validateSignaturesOfAllInputs((pubkey, msghash, signature) =>
@@ -257,11 +319,18 @@ export class Wallet {
             return acc;
         }, selectedCoins[0]);
 
-        const [{ script: internalPubKey }] = createOutputs(
-            privateKeys.map((key) => ({
+        const mappedKeys = privateKeys.map((key, index) => {
+            if (!key.privateKey) {
+                throw new Error(`Private key is undefined for entry at index ${index}`);
+            }
+            return {
                 key: key.privateKey.toString('hex'),
                 isXOnly: false,
-            })),
+            };
+        });
+
+        const [{ script: internalPubKey }] = createOutputs(
+            mappedKeys,
             {
                 txid: smallestOutpointCoin.txid,
                 vout: smallestOutpointCoin.vout,
@@ -271,16 +340,22 @@ export class Wallet {
         );
 
         const psbt = new Psbt({ network: this.network.network });
+        const p2trPayment = payments.p2tr({
+            pubkey: toXOnly(internalPubKey),
+            network: this.network.network,
+        }).address;
+
+        if (!p2trPayment) {
+            throw new Error('Cannot create P2TR payment');
+        }
+
         psbt.addOutput({
-            address: payments.p2tr({
-                pubkey: toXOnly(internalPubKey),
-                network: this.network.network,
-            }).address,
+            address: p2trPayment,
             value: amount,
         });
 
         if (change > 0) {
-            const changeAddress = await this.deriveChangeAddress();
+            const changeAddress = await this.deriveP2WPKHChangeAddress();
             psbt.addOutput({
                 address: changeAddress,
                 value: change,
@@ -328,3 +403,5 @@ export class Wallet {
         return address;
     }
 }
+
+
