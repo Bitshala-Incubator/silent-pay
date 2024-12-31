@@ -55,8 +55,10 @@ export class Wallet {
     private async initializeWithMnemonic(mnemonic: string, password?: string) {
         const seed = mnemonicToSeedSync(mnemonic).toString('hex');
         this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
-        this.scanKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/1'/0`);
-        this.spendKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/0'/0`);
+        const coinType = this.network.network.bech32 === 'bc' ? 0 : 1;
+        this.scanKey = this.masterKey.derivePath(`m/352'/${coinType}'/0'/1'/0`);
+        this.spendKey = this.masterKey.derivePath(`m/352'/${coinType}'/0'/0'/0`);
+
         this.setPassword(password ?? DEFAULT_ENCRYPTION_PASSWORD);
     
         for (let i = 0; i < this.lookahead; i++) {
@@ -78,8 +80,9 @@ export class Wallet {
         ).privateKey;
     
         this.masterKey = bip32.fromPrivateKey(decryptedPrivateKey, decryptedChainCode);
-        this.scanKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/1'/0`);
-        this.spendKey = this.masterKey.derivePath(`m/352'/${this.network.network.bech32}'/0'/0'/0`);
+        const coinType = this.network.network.bech32 === 'bc' ? 0 : 1;
+        this.scanKey = this.masterKey.derivePath(`m/352'/${coinType}'/0'/1'/0`);
+        this.spendKey = this.masterKey.derivePath(`m/352'/${coinType}'/0'/0'/0`);
     }
     
 
