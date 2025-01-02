@@ -1,4 +1,4 @@
-import { scanOutputs } from '../src';
+import { LabelMap, scanOutputs } from '../src';
 import { Buffer } from 'buffer';
 import { testData } from './fixtures/scanning';
 
@@ -20,7 +20,7 @@ describe('Scanning', () => {
                 Buffer.from(sumOfInputPublicKeys, 'hex'),
                 Buffer.from(inputHash, 'hex'),
                 outputs.map((output) => Buffer.from(output, 'hex')),
-                labels,
+                labels as LabelMap,
             );
 
             expect(result).toStrictEqual(
