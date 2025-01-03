@@ -109,3 +109,33 @@ export const scanOutputs = (
 
     return matches;
 };
+
+export const scanOutputsWithTweak = (
+    scanPrivateKey: Buffer,
+    spendPublicKey: Buffer,
+    scanTweak: Buffer,
+    outputs: Buffer[],
+    labels?: LabelMap,
+): Map<string, Buffer> => {
+    const matches = new Map<string, Buffer>();
+    let n = 0;
+    let counterIncrement = 0;
+    const ecdhSecret = secp256k1.privateKeyTweakMul(scanPrivateKey, scanTweak)
+
+    do {
+        const tweak = createTaggedHash(
+            'BIP0352/SharedSecret',
+            Buffer.concat([ecdhSecret, serialiseUint32(n)]),
+        );
+        counterIncrement = processTweak(
+            spendPublicKey,
+            tweak,
+            outputs,
+            matches,
+            labels,
+        );
+        n += counterIncrement;
+    } while (counterIncrement > 0 && outputs.length > 0);
+
+    return matches;
+};

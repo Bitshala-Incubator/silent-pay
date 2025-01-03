@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import { BitcoinRpcClient } from './helpers/bitcoin-rpc-client';
 import { Wallet } from '../src';
-import { WalletDB } from '@silent-pay/level';
-import { EsploraClient } from '@silent-pay/esplora';
+import { WalletDB } from '@silent-pay/level/src';
+import { EsploraClient } from '@silent-pay/esplora/src';
+import { silentBlock } from '@silent-pay/core/test/fixtures/encoding.ts';
 
 describe('Wallet', () => {
     let wallet: Wallet;
@@ -153,6 +154,33 @@ describe('Wallet', () => {
         // get the transaction from the node and check it has been broadcasted
         const tx = await bitcoinRpcClient.getMempoolEntry(txid);
         expect(tx).toBeDefined();
+    });
+
+    it('should scan a silent block and update UTXOs', async () => {
+        const block = silentBlock[0].parsedBlock;
+
+        await wallet.scanSilentBlock(block);
+        const utxos = await walletDB.getUnspentCoins();
+        expect(utxos).toContainEqual(
+            expect.objectContaining({
+                txid: 'd60cdcc1bdb78d44bf83e2ae0efa94bbb1187ba2397e4a40960d853b78e15b4f',
+                vout: 1,
+                value: 24771038,
+                address: expect.any(String),
+                status: { isConfirmed: true },
+                tweakData: '0381a4ef11a26108cf10d8c33305b77aec009beed82a77bb47b716a04ae9ae5bf1',
+            })
+        );
+        expect(utxos).toContainEqual(
+            expect.objectContaining({
+                txid: 'cf655a07ed9b672ecf811ce8b3b69257eecaf0518edd025d7014d7c0177050cb',
+                vout: 0,
+                value: 26940,
+                address: expect.any(String),
+                status: { isConfirmed: true },
+                tweakData: '03d87550a4ba8ed7dd37df7739a021d6d212e70e8a8e6e9e70249c13a11fd9f412',
+            })
+        );
     });
 
     afterAll(async () => {
