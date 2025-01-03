@@ -36,8 +36,8 @@
   },
   "include": [
     "packages/core/src",
-    "packages/esplora/src", 
-    "packages/level/src", 
+    "packages/esplora/src",
+    "packages/level/src",
     "packages/wallet/src"
   ],
   "exclude": ["**/*.spec.ts", "node_modules/**/*"]
