@@ -1,4 +1,4 @@
-import { Coin } from './coin.ts';
+import { Coin, P2Silent } from './coin.ts';
 
 export type DbInterface = {
     open(): Promise<void>;
@@ -25,6 +25,8 @@ export type DbInterface = {
     getAllAddresses(): Promise<string[]>;
     saveUnspentCoins(coins: Coin[]): Promise<void>;
     getUnspentCoins(): Promise<Coin[]>;
+    saveUnspentSilentPaymentCoins(coins: P2Silent[]): Promise<void>;
+    getUnspentSilentPaymentCoins(): Promise<P2Silent[]>;
     saveSilentPaymentAddress(address: string): Promise<void>;
     getSilentPaymentAddress(): Promise<string>;
 };
