@@ -12,6 +12,7 @@ import {
     encodeSilentPaymentAddress,
     SilentBlock,
     scanOutputsWithTweak,
+    deriveSpendingKey,
 } from '@silent-pay/core';
 import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
 import { bitcoin } from 'bitcoinjs-lib/src/networks';
@@ -143,9 +144,14 @@ export class Wallet {
     }
 
     private async signTransaction(psbt: Psbt, coins: Coin[]): Promise<void> {
+        const spendKey = this.masterKey.derivePath(
+            `m/352'/${this.getCoinType()}'/0'/0'/0`,
+        );
         for (let index = 0; index < coins.length; index++) {
-            const path = await this.db.getPathFromAddress(coins[index].address);
-            const privateKey = this.masterKey.derivePath(path);
+            const privateKey = await this.getPrivateKeyForCoin(
+                coins[index],
+                spendKey,
+            );
             psbt.signInput(index, privateKey);
         }
     }
@@ -212,6 +218,21 @@ export class Wallet {
         return tx.getId();
     }
 
+    private async getPrivateKeyForCoin(coin: Coin, spendKey: BIP32Interface) {
+        if (coin.tweak) {
+            // Silent output: derive key from tweak
+            const spendingKey = deriveSpendingKey(
+                spendKey.privateKey,
+                coin.tweak,
+            );
+            return ECPair.fromPrivateKey(spendingKey);
+        } else {
+            // Regular output: derive from HD path
+            const path = await this.db.getPathFromAddress(coin.address);
+            return this.masterKey.derivePath(path);
+        }
+    }
+
     async sendToSilentAddress(
         address: string,
         amount: number,
@@ -246,14 +267,6 @@ export class Wallet {
             dummyTx,
         );
 
-        const privateKeys = (
-            await Promise.all(
-                selectedCoins.map((coin) =>
-                    this.db.getPathFromAddress(coin.address),
-                ),
-            )
-        ).map((path) => this.masterKey.derivePath(path));
-
         // find the coin with smallest outpoint
         const smallestOutpointCoin = selectedCoins.reduce((acc, coin) => {
             const comp = Buffer.from(coin.txid, 'hex')
@@ -263,11 +276,28 @@ export class Wallet {
             return acc;
         }, selectedCoins[0]);
 
+        const spendKey = this.masterKey.derivePath(
+            `m/352'/${this.getCoinType()}'/0'/0'/0`,
+        );
+
+        // Retrieve private keys for each selected coin
+        const inputKeyPairs = await Promise.all(
+            selectedCoins.map((coin) =>
+                this.getPrivateKeyForCoin(coin, spendKey),
+            ),
+        );
+        const inputPrivateKeys = inputKeyPairs.map(
+            (keyPair) => keyPair.privateKey,
+        );
+
+        // prepare inputs with private keys and x-only status
+        const inputs = selectedCoins.map((coin, index) => ({
+            key: inputPrivateKeys[index].toString('hex'),
+            isXOnly: !!coin.tweak, // determine if x-only based on scanTweak
+        }));
+
         const [{ script: internalPubKey }] = createOutputs(
-            privateKeys.map((key) => ({
-                key: key.privateKey.toString('hex'),
-                isXOnly: false,
-            })),
+            inputs,
             {
                 txid: smallestOutpointCoin.txid,
                 vout: smallestOutpointCoin.vout,
@@ -295,8 +325,9 @@ export class Wallet {
 
         for (let index = 0; index < selectedCoins.length; index++) {
             psbt.addInput(selectedCoins[index].toInput(this.network.network));
-            psbt.signInput(index, privateKeys[index]);
         }
+
+        await this.signTransaction(psbt, selectedCoins);
 
         if (
             !psbt.validateSignaturesOfAllInputs((pubkey, msghash, signature) =>
@@ -355,16 +386,16 @@ export class Wallet {
 
             const scanTweak = Buffer.from(transaction.scanTweak, 'hex');
 
-            const matches = scanOutputsWithTweak(
+            const matchedOutputs = scanOutputsWithTweak(
                 scanPrivateKey,
                 spendPublicKey,
                 scanTweak,
                 outputPubKeys,
             );
 
-            if (matches.size === 0) continue;
+            if (matchedOutputs.size === 0) continue;
 
-            for (const pubKeyHex of matches.keys()) {
+            for (const pubKeyHex of matchedOutputs.keys()) {
                 const output = outputs.find(
                     (output) => output.pubKey === pubKeyHex.slice(2),
                 );
@@ -383,6 +414,7 @@ export class Wallet {
                             status: {
                                 isConfirmed: true,
                             },
+                            tweak: matchedOutputs.get(pubKeyHex),
                         }),
                     );
                 }

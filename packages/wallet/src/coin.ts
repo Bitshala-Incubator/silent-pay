@@ -15,6 +15,7 @@ export class Coin {
     value: number;
     address: string;
     status: CoinStatus;
+    tweak: Buffer;
 
     constructor(partial: Partial<Coin>) {
         Object.assign(this, partial);
@@ -31,6 +32,7 @@ export class Coin {
             value: this.value,
             address: this.address,
             status: this.status,
+            tweak: this.tweak,
         });
     }
 
