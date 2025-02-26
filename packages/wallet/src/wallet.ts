@@ -5,6 +5,7 @@ import * as ecc from 'tiny-secp256k1';
 import { Buffer } from 'buffer';
 import { fromOutputScript, toOutputScript } from 'bitcoinjs-lib/src/address';
 import { ECPairFactory } from 'ecpair';
+import { createHash } from 'crypto';
 import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 import { encrypt, decrypt } from 'bip38';
 import {
@@ -36,6 +37,8 @@ export class Wallet {
     private receiveDepth: number = 0;
     private changeDepth: number = 0;
     private lookahead: number;
+    private spendKey: BIP32Interface;
+    private scanKey: BIP32Interface;
 
     constructor(config: WalletConfigOptions) {
         this.db = config.db;
@@ -68,6 +71,12 @@ export class Wallet {
             this.masterKey = bip32.fromPrivateKey(
                 decryptedPrivateKey,
                 decryptedChainCode,
+            );
+            this.spendKey = this.masterKey.derivePath(
+                `m/352'/${this.getCoinType()}'/0'/0'/0`,
+            );
+            this.scanKey = this.masterKey.derivePath(
+                `m/352'/${this.getCoinType()}'/0'/1'/0`,
             );
         }
     }
@@ -144,9 +153,37 @@ export class Wallet {
 
     private async signTransaction(psbt: Psbt, coins: Coin[]): Promise<void> {
         for (let index = 0; index < coins.length; index++) {
-            const path = await this.db.getPathFromAddress(coins[index].address);
-            const privateKey = this.masterKey.derivePath(path);
-            psbt.signInput(index, privateKey);
+            const coin = coins[index];
+            if (coin.tweak) {
+                const spendPriv = this.spendKey.privateKey;
+                const scanPriv = this.scanKey.privateKey;
+                const scanTweakBuffer = Buffer.from(coin.tweak, 'hex');
+
+                const hash = createHash('sha256')
+                    .update(Buffer.concat([scanPriv, scanTweakBuffer]))
+                    .digest();
+
+                // Convert to BigInt and compute private key
+                const spendPrivBigInt = BigInt(
+                    '0x' + spendPriv.toString('hex'),
+                );
+                const tweakBigInt = BigInt('0x' + hash.toString('hex'));
+                const n = BigInt(
+                    '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
+                );
+                const privKey = (spendPrivBigInt + tweakBigInt) % n;
+
+                const privKeyBuffer = Buffer.from(
+                    privKey.toString(16).padStart(64, '0'),
+                    'hex',
+                );
+                const keyPair = ECPair.fromPrivateKey(privKeyBuffer);
+                psbt.signInput(index, keyPair);
+            } else {
+                const path = await this.db.getPathFromAddress(coin.address);
+                const privateKey = this.masterKey.derivePath(path);
+                psbt.signInput(index, privateKey);
+            }
         }
     }
 
@@ -187,7 +224,11 @@ export class Wallet {
         }
 
         for (const coin of selectedCoins) {
-            psbt.addInput(coin.toInput(this.network.network));
+            const input = coin.toInput(this.network.network);
+            if (input.witnessUtxo?.script[0] === 0x51) {
+                input.tapInternalKey = input.witnessUtxo.script.slice(2, 34);
+            }
+            psbt.addInput(input);
         }
 
         await this.signTransaction(psbt, selectedCoins);
@@ -383,6 +424,9 @@ export class Wallet {
                             status: {
                                 isConfirmed: true,
                             },
+                            tweak: matchedOutputs
+                                .get(pubKeyHex)
+                                .toString('hex'),
                         }),
                     );
                 }

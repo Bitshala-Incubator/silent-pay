@@ -143,3 +143,10 @@ export const scanOutputsWithTweak = (
         );
     }
 };
+
+export const deriveSpendingKey = (
+    spendPrivateKey: Buffer,
+    tweak: Buffer,
+): Buffer => {
+    return Buffer.from(secp256k1.privateKeyTweakAdd(spendPrivateKey, tweak));
+};

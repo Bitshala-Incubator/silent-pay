@@ -193,6 +193,14 @@ describe('Wallet', () => {
         },
     );
 
+    it('should spend 90% of the balance', async () => {
+        const address = await wallet.deriveReceiveAddress();
+        const amount = (await wallet.getBalance()) * 0.9;
+
+        const txid = await wallet.send(address, amount);
+        expect(txid).toBeDefined();
+    });
+
     afterAll(async () => {
         await wallet.close();
         fs.rmSync('./test/wallet', { recursive: true, force: true });
