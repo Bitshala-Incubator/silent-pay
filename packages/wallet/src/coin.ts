@@ -1,6 +1,7 @@
 import { toOutputScript } from 'bitcoinjs-lib/src/address';
 import { Network } from 'bitcoinjs-lib';
 import { WITNESS_SCALE_FACTOR } from './consensus.ts';
+import { toXOnly } from 'bitcoinjs-lib/src/psbt/bip371';
 
 type CoinStatus = {
     isConfirmed: boolean;
@@ -15,7 +16,7 @@ export class Coin {
     value: number;
     address: string;
     status: CoinStatus;
-    tweak: Buffer;
+    tweak?: string;
 
     constructor(partial: Partial<Coin>) {
         Object.assign(this, partial);
@@ -37,14 +38,27 @@ export class Coin {
     }
 
     toInput(network: Network) {
-        return {
-            hash: this.txid,
-            index: this.vout,
-            witnessUtxo: {
-                script: toOutputScript(this.address, network),
-                value: this.value,
-            },
-        };
+        if (this.tweak) {
+            const pubKey = Buffer.from(this.address.slice(2), 'hex'); // remove 0x prefix
+            return {
+                hash: this.txid,
+                index: this.vout,
+                witnessUtxo: {
+                    script: Buffer.from('5120' + pubKey.toString('hex'), 'hex'), // P2TR script
+                    value: this.value,
+                },
+                tapInternalKey: toXOnly(pubKey),
+            };
+        } else {
+            return {
+                hash: this.txid,
+                index: this.vout,
+                witnessUtxo: {
+                    script: toOutputScript(this.address, network),
+                    value: this.value,
+                },
+            };
+        }
     }
 
     estimateSpendingSize(): number {
