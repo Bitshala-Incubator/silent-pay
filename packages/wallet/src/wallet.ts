@@ -36,6 +36,8 @@ export class Wallet {
     private receiveDepth: number = 0;
     private changeDepth: number = 0;
     private lookahead: number;
+    private spendKey: BIP32Interface;
+    private scanKey: BIP32Interface;
 
     constructor(config: WalletConfigOptions) {
         this.db = config.db;
@@ -68,6 +70,12 @@ export class Wallet {
             this.masterKey = bip32.fromPrivateKey(
                 decryptedPrivateKey,
                 decryptedChainCode,
+            );
+            this.spendKey = this.masterKey.derivePath(
+                `m/352'/${this.getCoinType()}'/0'/0'/0`,
+            );
+            this.scanKey = this.masterKey.derivePath(
+                `m/352'/${this.getCoinType()}'/0'/1'/0`,
             );
         }
     }
@@ -144,10 +152,49 @@ export class Wallet {
 
     private async signTransaction(psbt: Psbt, coins: Coin[]): Promise<void> {
         for (let index = 0; index < coins.length; index++) {
-            const path = await this.db.getPathFromAddress(coins[index].address);
-            const privateKey = this.masterKey.derivePath(path);
-            psbt.signInput(index, privateKey);
+            const coin = coins[index];
+            if (coin.tweak) {
+                const spendPriv = this.spendKey.privateKey;
+                const tweakBuf = Buffer.from(coin.tweak, 'hex');
+
+                const ephemeralPriv = ecc.privateAdd(spendPriv, tweakBuf);
+
+                const keyPair = ECPair.fromPrivateKey(
+                    Buffer.from(ephemeralPriv),
+                );
+                const xPub = toXOnly(keyPair.publicKey);
+
+                const schnorrSigner = {
+                    publicKey: xPub,
+                    sign: () => {
+                        throw new Error('Taproot requires Schnorr');
+                    },
+                    signSchnorr: (msgHash: Buffer) =>
+                        keyPair.signSchnorr(msgHash),
+                };
+
+                psbt.signInput(index, schnorrSigner);
+            } else {
+                const path = await this.db.getPathFromAddress(coin.address);
+                const privateKey = this.masterKey.derivePath(path);
+                psbt.signInput(index, privateKey);
+            }
         }
+    }
+
+    private validateSignatures(psbt: Psbt): boolean {
+        return psbt.validateSignaturesOfAllInputs(
+            (pubkey, msghash, signature) => {
+                if (pubkey.length === 32) {
+                    return ecc.verifySchnorr(msghash, pubkey, signature);
+                } else {
+                    return ECPair.fromPublicKey(pubkey).verify(
+                        msghash,
+                        signature,
+                    );
+                }
+            },
+        );
     }
 
     async createAndSignTransaction(
@@ -187,16 +234,14 @@ export class Wallet {
         }
 
         for (const coin of selectedCoins) {
-            psbt.addInput(coin.toInput(this.network.network));
+            psbt.addInput(
+                coin.toInput(this.network.network, this.spendKey.publicKey),
+            );
         }
 
         await this.signTransaction(psbt, selectedCoins);
 
-        if (
-            !psbt.validateSignaturesOfAllInputs((pubkey, msghash, signature) =>
-                ECPair.fromPublicKey(pubkey).verify(msghash, signature),
-            )
-        ) {
+        if (!this.validateSignatures(psbt)) {
             throw new Error('Invalid signature');
         }
 
@@ -294,15 +339,16 @@ export class Wallet {
         }
 
         for (let index = 0; index < selectedCoins.length; index++) {
-            psbt.addInput(selectedCoins[index].toInput(this.network.network));
+            psbt.addInput(
+                selectedCoins[index].toInput(
+                    this.network.network,
+                    this.spendKey.publicKey,
+                ),
+            );
             psbt.signInput(index, privateKeys[index]);
         }
 
-        if (
-            !psbt.validateSignaturesOfAllInputs((pubkey, msghash, signature) =>
-                ECPair.fromPublicKey(pubkey).verify(msghash, signature),
-            )
-        ) {
+        if (!this.validateSignatures(psbt)) {
             throw new Error('Invalid signature');
         }
 
@@ -321,16 +367,9 @@ export class Wallet {
         let address = await this.db.getSilentPaymentAddress();
         if (address) return address;
 
-        const spendKey = this.masterKey.derivePath(
-            `m/352'/${this.getCoinType()}'/0'/0'/0`,
-        );
-        const scanKey = this.masterKey.derivePath(
-            `m/352'/${this.getCoinType()}'/0'/1'/0`,
-        );
-
         address = encodeSilentPaymentAddress(
-            scanKey.publicKey,
-            spendKey.publicKey,
+            this.scanKey.publicKey,
+            this.spendKey.publicKey,
             this.network.network,
         );
         await this.db.saveSilentPaymentAddress(address);
@@ -383,6 +422,9 @@ export class Wallet {
                             status: {
                                 isConfirmed: true,
                             },
+                            tweak: matchedOutputs
+                                .get(pubKeyHex)
+                                ?.toString('hex'),
                         }),
                     );
                 }
@@ -393,17 +435,10 @@ export class Wallet {
     }
 
     async scanSilentBlock(silentBlock: SilentBlock): Promise<void> {
-        const scanKey = this.masterKey.derivePath(
-            `m/352'/${this.getCoinType()}'/0'/1'/0`,
-        );
-        const spendKey = this.masterKey.derivePath(
-            `m/352'/${this.getCoinType()}'/0'/0'/0`,
-        );
-
         const matchedUTXOs = this.matchSilentBlockOutputs(
             silentBlock,
-            scanKey.privateKey,
-            spendKey.publicKey,
+            this.scanKey.privateKey,
+            this.spendKey.publicKey,
         );
 
         if (matchedUTXOs.length) {

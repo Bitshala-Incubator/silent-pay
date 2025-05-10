@@ -188,10 +188,39 @@ describe('Wallet', () => {
                     value: transaction.outputs[0].value,
                     address: expect.stringMatching(/^bcrt1p/),
                     status: { isConfirmed: true },
+                    tweak: expect.stringMatching(/^[0-9a-f]{64}$/),
                 }),
             );
         },
     );
+
+    it('should spend a silent payment UTXO', async () => {
+        const allCoins = await walletDB.getUnspentCoins();
+
+        // find silent payment UTXOs (those with tweaks)
+        const silentCoins = allCoins.filter((coin) => coin.tweak);
+        expect(silentCoins.length).toBeGreaterThan(0);
+
+        // ensure it's confirmed on-chain
+        await bitcoinRpcClient.mineToAddress(
+            1,
+            await bitcoinRpcClient.getNewAddress(),
+        );
+        await wallet.scan();
+
+        // spend one of the silent payment UTXOs
+        const destinationAddress = await wallet.deriveReceiveAddress();
+        const amountToSpend = (await wallet.getBalance()) * 0.9; // leave some for fees
+
+        const txid = await wallet.send(
+            destinationAddress,
+            Math.floor(amountToSpend),
+        );
+        expect(txid).toBeDefined();
+
+        const tx = await bitcoinRpcClient.getMempoolEntry(txid);
+        expect(tx).toBeDefined();
+    });
 
     afterAll(async () => {
         await wallet.close();
