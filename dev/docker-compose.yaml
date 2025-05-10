@@ -20,7 +20,7 @@ services:
     ports:
       - "18443:18443"
   esplora:
-    image: blockstream/esplora:5ec810278c737c78ed54e82749581f1a52ce1b54
+    image: blockstream/esplora:latest
     environment:
       ELECTRS_ARGS: --jsonrpc-import --daemon-rpc-addr bitcoin:18443 --cookie alice:password
     volumes:
