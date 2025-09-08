@@ -1,4 +1,4 @@
-import { Coin } from './coin.ts';
+import { Coin } from './coin';
 import { Transaction } from 'bitcoinjs-lib';
 
 class CoinPointer {

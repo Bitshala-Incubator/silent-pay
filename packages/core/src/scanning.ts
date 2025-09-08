@@ -1,5 +1,5 @@
-import { createTaggedHash, serialiseUint32 } from './utility.ts';
-import { LabelMap } from './interface.ts';
+import { createTaggedHash, serialiseUint32 } from './utility';
+import { LabelMap } from './interface';
 import secp256k1 from 'secp256k1';
 import { Buffer } from 'buffer';
 

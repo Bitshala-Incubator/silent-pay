@@ -1,5 +1,5 @@
 import { Network } from 'bitcoinjs-lib';
-import { Coin } from './coin.ts';
+import { Coin } from './coin';
 
 export type NetworkInterface = {
     get network(): Network;

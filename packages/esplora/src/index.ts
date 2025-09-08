@@ -1,1 +1,1 @@
-export * from './esplora.ts';
+export * from './esplora';

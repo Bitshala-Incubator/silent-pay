@@ -1,5 +1,5 @@
 import { Coin } from '../src/coin';
-import { CoinSelector } from '../src/coin-selector.ts';
+import { CoinSelector } from '../src/coin-selector';
 import { Transaction } from 'bitcoinjs-lib';
 import crypto from 'crypto';
 

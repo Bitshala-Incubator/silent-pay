@@ -1,6 +1,6 @@
-import { WITNESS_FLAG, WITNESS_MARKER } from './constants.ts';
-import { encodingLength, isPubKey, readVarInt } from './utility.ts';
-import { Input, Output } from './interface.ts';
+import { WITNESS_FLAG, WITNESS_MARKER } from './constants';
+import { encodingLength, isPubKey, readVarInt } from './utility';
+import { Input, Output } from './interface';
 import { Buffer } from 'buffer';
 
 export class Transaction {
