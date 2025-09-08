@@ -26,3 +26,6 @@ coverage
 # test
 test/wallet-db
 test/wallet
+
+# npm tar files
+*.tgz
