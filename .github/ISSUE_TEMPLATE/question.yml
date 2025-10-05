@@ -1,0 +1,73 @@
+name: Question/Doubt
+description: Ask a question or clarify doubts about the project
+title: "[QUESTION] "
+labels: ["question", "help wanted"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to ask a question! Please fill out this form to help us understand your question better.
+  
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know? Please be as specific as possible.
+      placeholder: Describe your question or doubt here...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Please provide any relevant context that might help us understand your question better.
+      placeholder: |
+        - What were you trying to do?
+        - What documentation did you already check?
+        - Any specific use case or scenario?
+    validations:
+      required: false
+  
+  - type: textarea
+    id: attempted-solutions
+    attributes:
+      label: What have you tried?
+      description: Have you tried searching for answers or attempted any solutions?
+      placeholder: |
+        - Searched the documentation
+        - Looked through existing issues
+        - Tried specific approaches
+    validations:
+      required: false
+  
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area of Interest
+      description: Which part of the project does your question relate to?
+      options:
+        - Core functionality
+        - Wallet implementation
+        - Database operations
+        - API/Network integration
+        - Testing
+        - Documentation
+        - Setup/Installation
+        - Other
+    validations:
+      required: false
+  
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: I have checked the project documentation
+          required: true
+        - label: This is not a bug report (use bug report template instead)
+          required: true
