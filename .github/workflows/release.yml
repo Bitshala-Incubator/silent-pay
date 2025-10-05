@@ -320,7 +320,7 @@ jobs:
           fi
         env:
           # NPM_TOKEN secret should be configured in repository settings for npm publishing
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Create release artifacts
   create-artifacts:
