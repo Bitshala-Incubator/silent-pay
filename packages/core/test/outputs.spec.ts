@@ -1,4 +1,4 @@
-import { createOutputs } from '../src';
+import { createOutputs, toHex } from '../src';
 import { testData } from './fixtures/outputs';
 
 describe('Outputs', () => {
@@ -13,7 +13,7 @@ describe('Outputs', () => {
             expect(
                 outputs
                     .map((output) => ({
-                        pubkey: output.script.toString('hex'),
+                        pubkey: toHex(output.script),
                         value: output.value,
                     }))
                     .sort((a, b) => a.pubkey.localeCompare(b.pubkey)),
