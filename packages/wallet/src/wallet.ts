@@ -12,6 +12,9 @@ import {
     encodeSilentPaymentAddress,
     SilentBlock,
     scanOutputsWithTweak,
+    fromHex,
+    toHex,
+    reverse,
 } from '@silent-pay/core';
 import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
 import { bitcoin } from 'bitcoinjs-lib/src/networks';
@@ -154,8 +157,8 @@ export class Wallet {
         for (let index = 0; index < coins.length; index++) {
             const coin = coins[index];
             if (coin.tweak) {
-                const spendPriv = this.spendKey.privateKey;
-                const tweakBuf = Buffer.from(coin.tweak, 'hex');
+                const spendPriv = new Uint8Array(this.spendKey.privateKey);
+                const tweakBuf = fromHex(coin.tweak);
 
                 const ephemeralPriv = ecc.privateAdd(spendPriv, tweakBuf);
 
@@ -186,7 +189,7 @@ export class Wallet {
         return psbt.validateSignaturesOfAllInputs(
             (pubkey, msghash, signature) => {
                 if (pubkey.length === 32) {
-                    return ecc.verifySchnorr(msghash, pubkey, signature);
+                    return ecc.verifySchnorr(new Uint8Array(msghash), new Uint8Array(pubkey), new Uint8Array(signature));
                 } else {
                     return ECPair.fromPublicKey(pubkey).verify(
                         msghash,
@@ -235,7 +238,7 @@ export class Wallet {
 
         for (const coin of selectedCoins) {
             psbt.addInput(
-                coin.toInput(this.network.network, this.spendKey.publicKey),
+                coin.toInput(this.network.network, new Uint8Array(this.spendKey.publicKey)),
             );
         }
 
@@ -301,10 +304,17 @@ export class Wallet {
 
         // find the coin with smallest outpoint
         const smallestOutpointCoin = selectedCoins.reduce((acc, coin) => {
-            const comp = Buffer.from(coin.txid, 'hex')
-                .reverse()
-                .compare(Buffer.from(acc.txid, 'hex').reverse());
-            if (comp < 0 || (comp === 0 && coin.vout < acc.vout)) return coin;
+            const coinTxid = reverse(fromHex(coin.txid));
+            const accTxid = reverse(fromHex(acc.txid));
+            
+            // Compare the arrays byte by byte
+            for (let i = 0; i < coinTxid.length; i++) {
+                if (coinTxid[i] < accTxid[i]) return coin;
+                if (coinTxid[i] > accTxid[i]) return acc;
+            }
+            
+            // If txids are equal, compare vout
+            if (coin.vout < acc.vout) return coin;
             return acc;
         }, selectedCoins[0]);
 
@@ -324,7 +334,7 @@ export class Wallet {
         const psbt = new Psbt({ network: this.network.network });
         psbt.addOutput({
             address: payments.p2tr({
-                pubkey: toXOnly(internalPubKey),
+                pubkey: toXOnly(Buffer.from(internalPubKey)),
                 network: this.network.network,
             }).address,
             value: amount,
@@ -342,7 +352,7 @@ export class Wallet {
             psbt.addInput(
                 selectedCoins[index].toInput(
                     this.network.network,
-                    this.spendKey.publicKey,
+                    new Uint8Array(this.spendKey.publicKey),
                 ),
             );
             psbt.signInput(index, privateKeys[index]);
@@ -368,8 +378,8 @@ export class Wallet {
         if (address) return address;
 
         address = encodeSilentPaymentAddress(
-            this.scanKey.publicKey,
-            this.spendKey.publicKey,
+            new Uint8Array(this.scanKey.publicKey),
+            new Uint8Array(this.spendKey.publicKey),
             this.network.network,
         );
         await this.db.saveSilentPaymentAddress(address);
@@ -378,8 +388,8 @@ export class Wallet {
 
     private matchSilentBlockOutputs(
         silentBlock: SilentBlock,
-        scanPrivateKey: Buffer,
-        spendPublicKey: Buffer,
+        scanPrivateKey: Uint8Array,
+        spendPublicKey: Uint8Array,
     ): Coin[] {
         const matchedUTXOs: Coin[] = [];
 
@@ -389,10 +399,10 @@ export class Wallet {
             if (outputs.length === 0) continue;
 
             const outputPubKeys = outputs.map((output) =>
-                Buffer.from('02' + output.pubKey, 'hex'),
+                fromHex('02' + output.pubKey),
             );
 
-            const scanTweak = Buffer.from(transaction.scanTweak, 'hex');
+            const scanTweak = fromHex(transaction.scanTweak);
 
             const matchedOutputs = scanOutputsWithTweak(
                 scanPrivateKey,
@@ -422,9 +432,7 @@ export class Wallet {
                             status: {
                                 isConfirmed: true,
                             },
-                            tweak: matchedOutputs
-                                .get(pubKeyHex)
-                                ?.toString('hex'),
+                            tweak: toHex(matchedOutputs.get(pubKeyHex) || new Uint8Array()),
                         }),
                     );
                 }
@@ -437,8 +445,8 @@ export class Wallet {
     async scanSilentBlock(silentBlock: SilentBlock): Promise<void> {
         const matchedUTXOs = this.matchSilentBlockOutputs(
             silentBlock,
-            this.scanKey.privateKey,
-            this.spendKey.publicKey,
+            new Uint8Array(this.scanKey.privateKey),
+            new Uint8Array(this.spendKey.publicKey),
         );
 
         if (matchedUTXOs.length) {

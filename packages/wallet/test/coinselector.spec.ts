@@ -54,7 +54,7 @@ describe('CoinSelector', () => {
             // Set the transaction output value with a random output script.
             // Random 20 bytes and `0014${randomBytes.toString()}` will be a valid P2WPKH script.
             transaction.addOutput(
-                Buffer.from(`0014${crypto.randomBytes(20).toString('hex')}`), // Ensure the first parameter passed to addOutput is a Buffer.
+                Buffer.from(`0014${crypto.randomBytes(20).toString('hex')}`, 'hex'), // Ensure the first parameter passed to addOutput is a Buffer.
                 txOutValue,
             );
 

@@ -1,4 +1,4 @@
-import { Transaction } from '../src';
+import { Transaction, toHex } from '../src';
 import { validTransactions } from './fixtures/transaction';
 
 describe('Transaction', () => {
@@ -12,11 +12,11 @@ describe('Transaction', () => {
             expect(
                 transaction.inputs
                     .map((inp) => ({
-                        hash: inp.hash.toString('hex'),
+                        hash: toHex(inp.hash),
                         index: inp.index,
-                        script: inp.script.toString('hex'),
+                        script: toHex(inp.script),
                         sequence: inp.sequence,
-                        witness: inp.witness.map((w) => w.toString('hex')),
+                        witness: inp.witness.map((w) => toHex(w)),
                     }))
                     .sort(
                         (a, b) =>
@@ -31,7 +31,7 @@ describe('Transaction', () => {
             expect(
                 transaction.outputs
                     .map((out) => ({
-                        script: out.script.toString('hex'),
+                        script: toHex(out.script),
                         value: out.value,
                     }))
                     .sort(
@@ -74,7 +74,7 @@ describe('Transaction', () => {
         const transaction = Transaction.fromHex(tx.hex);
         const receivedInPubkeys = tx.raw.ins.map((_, index) => {
             const PK = transaction.getPublicKeyFromInput(index);
-            return PK ? PK?.toString('hex') : PK;
+            return PK ? toHex(PK) : PK;
         });
         expect(receivedInPubkeys).toStrictEqual(tx.raw.inPubkeys);
     });
