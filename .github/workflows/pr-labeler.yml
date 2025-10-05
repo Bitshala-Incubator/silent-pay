@@ -1,0 +1,287 @@
+name: 'Pull Request Labeler'
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  label-pr:
+    name: Label Pull Request
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Apply path-based labels
+        uses: actions/labeler@v5
+        with:
+          configuration-path: '.github/labeler.yml'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Add size labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            
+            // Get PR details
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+            
+            const additions = pr.data.additions;
+            const deletions = pr.data.deletions;
+            const totalChanges = additions + deletions;
+            
+            // Remove existing size labels
+            const existingLabels = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber
+            });
+            
+            const sizeLabels = existingLabels.data.filter(label => 
+              label.name.startsWith('size/')
+            );
+            
+            for (const label of sizeLabels) {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number: prNumber,
+                name: label.name
+              });
+            }
+            
+            // Determine size label
+            let sizeLabel;
+            if (totalChanges < 10) {
+              sizeLabel = 'size/XS';
+            } else if (totalChanges < 100) {
+              sizeLabel = 'size/S';
+            } else if (totalChanges < 500) {
+              sizeLabel = 'size/M';
+            } else if (totalChanges < 1000) {
+              sizeLabel = 'size/L';
+            } else {
+              sizeLabel = 'size/XL';
+            }
+            
+            // Add new size label
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: prNumber,
+              labels: [sizeLabel]
+            });
+            
+            console.log(`Added size label: ${sizeLabel} (${totalChanges} changes)`);
+            
+      - name: Add semantic labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const title = context.payload.pull_request.title.toLowerCase();
+            const body = context.payload.pull_request.body || '';
+            
+            const labelsToAdd = [];
+            
+            // Check for semantic labels in title
+            if (title.includes('fix') || title.includes('bug') || title.includes('hotfix')) {
+              labelsToAdd.push('bug');
+            }
+            
+            if (title.includes('feat') || title.includes('feature') || title.includes('enhancement')) {
+              labelsToAdd.push('enhancement');
+            }
+            
+            if (title.includes('docs') || title.includes('documentation')) {
+              labelsToAdd.push('docs');
+            }
+            
+            if (title.includes('test') || title.includes('testing')) {
+              labelsToAdd.push('tests');
+            }
+            
+            if (title.includes('perf') || title.includes('performance') || title.includes('optimization')) {
+              labelsToAdd.push('performance');
+            }
+            
+            if (title.includes('security') || title.includes('vulnerability')) {
+              labelsToAdd.push('security');
+            }
+            
+            if (title.includes('refactor') || title.includes('cleanup')) {
+              labelsToAdd.push('refactor');
+            }
+            
+            if (title.includes('breaking') || body.toLowerCase().includes('breaking change')) {
+              labelsToAdd.push('breaking-change');
+            }
+            
+            // Check if it's a work in progress
+            if (title.includes('wip') || title.includes('draft') || context.payload.pull_request.draft) {
+              labelsToAdd.push('work-in-progress');
+            }
+            
+            // Add labels if any were determined
+            if (labelsToAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: labelsToAdd
+              });
+              
+              console.log(`Added semantic labels: ${labelsToAdd.join(', ')}`);
+            }
+            
+      - name: Check for conflicts
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            
+            try {
+              const pr = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber
+              });
+              
+              if (pr.data.mergeable === false) {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  labels: ['needs-rebase']
+                });
+                
+                const comment = `⚠️ **Merge Conflicts Detected**
+                
+                This pull request has merge conflicts that need to be resolved before it can be merged.
+                
+                **To resolve conflicts:**
+                1. Fetch the latest changes from the main branch
+                2. Merge or rebase main into your branch
+                3. Resolve any conflicts
+                4. Push the updated branch
+                
+                \`\`\`bash
+                git fetch origin
+                git merge origin/main  # or git rebase origin/main
+                # Resolve conflicts, then:
+                git add .
+                git commit
+                git push
+                \`\`\`
+                
+                The \`needs-rebase\` label will be automatically removed once conflicts are resolved.`;
+
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: comment
+                });
+              } else {
+                // Remove needs-rebase label if no conflicts
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: prNumber,
+                    name: 'needs-rebase'
+                  });
+                } catch (error) {
+                  // Label doesn't exist, which is fine
+                }
+              }
+            } catch (error) {
+              console.log('Could not check merge conflicts:', error.message);
+            }
+
+  setup-pr-labels:
+    name: Setup PR Labels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.action == 'opened'
+    
+    permissions:
+      issues: write
+    
+    steps:
+      - name: Create PR-specific labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            
+            const labels = [
+              // Size labels
+              { name: 'size/XS', color: '3CBF00', description: 'Extra small PR (< 10 lines changed)' },
+              { name: 'size/S', color: '5D9801', description: 'Small PR (< 100 lines changed)' },
+              { name: 'size/M', color: 'A0A000', description: 'Medium PR (< 500 lines changed)' },
+              { name: 'size/L', color: 'C7531B', description: 'Large PR (< 1000 lines changed)' },
+              { name: 'size/XL', color: 'D93F0B', description: 'Extra large PR (> 1000 lines changed)' },
+              
+              // Component labels
+              { name: 'comp: core', color: '1d76db', description: 'Core package changes' },
+              { name: 'comp: esplora', color: '1d76db', description: 'Esplora package changes' },
+              { name: 'comp: level', color: '1d76db', description: 'Level package changes' },
+              { name: 'comp: wallet', color: '1d76db', description: 'Wallet package changes' },
+              
+              // Type labels
+              { name: 'bug', color: 'd73a4a', description: 'Bug fix' },
+              { name: 'enhancement', color: 'a2eeef', description: 'New feature or enhancement' },
+              { name: 'docs', color: '0075ca', description: 'Documentation changes' },
+              { name: 'tests', color: '0e8a16', description: 'Test changes' },
+              { name: 'ci/cd', color: '1f1f1f', description: 'CI/CD changes' },
+              { name: 'dependencies', color: '0366d6', description: 'Dependency updates' },
+              { name: 'security', color: 'b60205', description: 'Security-related changes' },
+              { name: 'performance', color: 'fbca04', description: 'Performance improvements' },
+              { name: 'refactor', color: 'c5def5', description: 'Code refactoring' },
+              { name: 'api', color: '7057ff', description: 'API changes' },
+              
+              // Status labels
+              { name: 'needs-rebase', color: 'e99695', description: 'PR has merge conflicts' },
+              { name: 'work-in-progress', color: 'f9d0c4', description: 'Work in progress' },
+              { name: 'breaking-change', color: 'b60205', description: 'Contains breaking changes' },
+              { name: 'ready-for-review', color: '0e8a16', description: 'Ready for code review' }
+            ];
+            
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`Created label: ${label.name}`);
+              } catch (error) {
+                if (error.status === 422) {
+                  console.log(`Label already exists: ${label.name}`);
+                } else {
+                  console.error(`Error creating label ${label.name}:`, error.message);
+                }
+              }
+            }
