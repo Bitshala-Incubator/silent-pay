@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
 dist-ssr
 *.local
 coverage
@@ -23,6 +24,9 @@ coverage
 *.sln
 *.sw?
 
-# test
+# Test artifacts and temporary files
 test/wallet-db
 test/wallet
+*.test.js
+*.test.ts
+.jest-cache

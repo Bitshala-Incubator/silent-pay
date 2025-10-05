@@ -19,6 +19,11 @@
     "./packages/*"
   ],
   "scripts": {
+    "test": "npm run test --workspaces",
+    "test:cov": "npm run test:cov --workspaces",
+    "test:ci": "jest --coverage --ci --watchAll=false",
+    "types:check": "npm run types:check --workspaces",
+    "build": "npm run build --workspaces",
     "format": "prettier --ignore-path .gitignore --loglevel=silent --write \"**/*.+(js|ts|json)\"  \"!dist/*\"",
     "format:check": "prettier --check \"**/*.+(js|ts|json)\" \"!dist/*\"",
     "lint": "eslint --ext .js,.ts .  --ignore-pattern \"dist/*\""
