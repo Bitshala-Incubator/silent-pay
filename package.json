@@ -19,6 +19,7 @@
     "./packages/*"
   ],
   "scripts": {
+    "prepare": "husky install",
     "format": "prettier --ignore-path .gitignore --loglevel=silent --write \"**/*.+(js|ts|json)\"  \"!dist/*\"",
     "format:check": "prettier --check \"**/*.+(js|ts|json)\" \"!dist/*\"",
     "lint": "eslint --ext .js,.ts .  --ignore-pattern \"dist/*\""
@@ -41,11 +42,11 @@
   },
   "lint-staged": {
     "*.ts": [
-      "bash -c 'npm run lint'",
-      "bash -c 'npm run types:check --ws'"
+      "npm run lint",
+      "npm run types:check --ws"
     ],
     "*.{ts,yaml,json}": [
-      "bash -c 'npm run format'"
+      "npm run format"
     ]
   }
 }

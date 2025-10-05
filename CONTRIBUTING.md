@@ -60,6 +60,26 @@ Feature requests are welcome. But take a moment to find out whether your idea fi
 - All PRs must add tests for the proposed changes
 - Write meaningful commit messages
 
+### Pre-commit Hooks
+
+This project uses [Husky](https://typicode.github.io/husky/) to run pre-commit hooks that automatically check code quality before each commit. The pre-commit hook will:
+
+- Run ESLint to check for linting errors
+- Run TypeScript type checking across all workspaces
+- Run Prettier to format code
+
+#### Bypassing Pre-commit Hooks
+
+In some cases, you may need to bypass the pre-commit hooks (e.g., for work-in-progress commits). You can skip the hooks using the `--no-verify` or `-n` flag:
+
+```bash
+git commit -m "Your commit message" --no-verify
+# or
+git commit -m "Your commit message" -n
+```
+
+**Note:** Use this sparingly and ensure your code passes all checks before submitting a pull request, as CI/CD will still run the same checks.
+
 ## Styleguides
 
 ### Git Commit Messages
