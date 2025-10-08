@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "npm run build --ws",
-    "test": "npm test --ws",
+    "test": "npm run test --ws",
     "clean": "rm -rf dist packages/*/dist",
     "format": "prettier --ignore-path .gitignore --loglevel=silent --write \"**/*.+(js|ts|json)\"  \"!dist/*\"",
     "format:check": "prettier --check \"**/*.+(js|ts|json)\" \"!dist/*\"",
