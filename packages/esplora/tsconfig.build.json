@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/level",
+    "outDir": "../../dist/esplora",
     "noEmit": false
   },
   "include": ["src/**/*"],
