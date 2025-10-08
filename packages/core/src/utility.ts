@@ -1,4 +1,4 @@
-import { Outpoint, PrivateKey } from './interface.ts';
+import { Outpoint, PrivateKey } from './interface';
 import secp256k1 from 'secp256k1';
 import createHash from 'create-hash';
 import { Buffer } from 'buffer';

@@ -13,7 +13,7 @@ import {
     SilentBlock,
     scanOutputsWithTweak,
 } from '@silent-pay/core';
-import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index.ts';
+import { NetworkInterface, DbInterface, Coin, CoinSelector } from './index';
 import { bitcoin } from 'bitcoinjs-lib/src/networks';
 
 initEccLib(ecc);

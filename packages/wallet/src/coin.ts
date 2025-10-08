@@ -1,6 +1,6 @@
 import { toOutputScript } from 'bitcoinjs-lib/src/address';
 import { Network } from 'bitcoinjs-lib';
-import { WITNESS_SCALE_FACTOR } from './consensus.ts';
+import { WITNESS_SCALE_FACTOR } from './consensus';
 import * as ecc from 'tiny-secp256k1';
 
 type CoinStatus = {

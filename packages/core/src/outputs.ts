@@ -1,11 +1,11 @@
-import { Outpoint, Output, PrivateKey, RecipientAddress } from './interface.ts';
+import { Outpoint, Output, PrivateKey, RecipientAddress } from './interface';
 import {
     calculateSumOfPrivateKeys,
     createInputHash,
     createTaggedHash,
     serialiseUint32,
-} from './utility.ts';
-import { decodeSilentPaymentAddress } from './encoding.ts';
+} from './utility';
+import { decodeSilentPaymentAddress } from './encoding';
 import secp256k1 from 'secp256k1';
 import { Buffer } from 'buffer';
 import { bitcoin } from 'bitcoinjs-lib/src/networks';

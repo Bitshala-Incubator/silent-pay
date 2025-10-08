@@ -1,2 +1,2 @@
-export * from './db.ts';
-export * from './layout.ts';
+export * from './db';
+export * from './layout';
