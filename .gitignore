@@ -29,3 +29,6 @@ test/wallet
 
 # npm tar files
 *.tgz
+
+# dist
+packages/**/dist
