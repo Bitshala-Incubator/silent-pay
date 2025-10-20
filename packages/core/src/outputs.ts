@@ -8,8 +8,8 @@ import {
 import { decodeSilentPaymentAddress } from './encoding';
 import secp256k1 from 'secp256k1';
 import { Buffer } from 'buffer';
-import { bitcoin } from 'bitcoinjs-lib/src/networks';
 import { Network } from 'bitcoinjs-lib';
+import { bitcoin } from './networks';
 
 export const createOutputs = (
     inputPrivateKeys: PrivateKey[],

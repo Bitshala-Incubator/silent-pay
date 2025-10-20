@@ -2,7 +2,6 @@ import { bech32m } from 'bech32';
 import secp256k1 from 'secp256k1';
 import { Buffer } from 'buffer';
 import { Network } from 'bitcoinjs-lib';
-import { bitcoin } from 'bitcoinjs-lib/src/networks';
 import {
     createTaggedHash,
     encodingLength,
@@ -10,6 +9,7 @@ import {
     serialiseUint32,
 } from './utility';
 import { SilentBlock } from './interface';
+import { bitcoin } from './networks';
 
 export const encodeSilentPaymentAddress = (
     scanPubKey: Uint8Array,
