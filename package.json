@@ -48,5 +48,8 @@
     "*.{ts,yaml,json}": [
       "bash -c 'npm run format'"
     ]
+  },
+  "dependencies": {
+    "tsup": "^8.5.0"
   }
 }
