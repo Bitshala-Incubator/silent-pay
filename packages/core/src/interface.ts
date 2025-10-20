@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 export type Outpoint = {
     txid: string;
     vout: number;
@@ -16,18 +14,18 @@ export type RecipientAddress = {
 };
 
 export type Output = {
-    script: Buffer;
+    script: Uint8Array;
     value: number;
 };
 
 export type LabelMap = { [key: string]: string };
 
 export type Input = {
-    hash: Buffer;
+    hash: Uint8Array;
     index: number;
-    script: Buffer;
+    script: Uint8Array;
     sequence: number;
-    witness: Buffer[];
+    witness: Uint8Array[];
 };
 
 export type SilentBlock = {

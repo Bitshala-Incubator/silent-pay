@@ -1,42 +1,44 @@
 import { createTaggedHash, serialiseUint32 } from './utility';
 import { LabelMap } from './interface';
 import secp256k1 from 'secp256k1';
-import { Buffer } from 'buffer';
+import {
+    fromHex,
+    toHex,
+    concat,
+    areUint8ArraysEqual,
+} from '../../../helpers/uint8array.js';
 
 // Handle additional label-related logic
 const handleLabels = (
-    output: Buffer,
+    output: Uint8Array,
     tweakedPublicKey: Uint8Array,
-    tweak: Buffer,
+    tweak: Uint8Array,
     labels: LabelMap,
 ): Uint8Array | null => {
     const negatedPublicKey = secp256k1.publicKeyNegate(tweakedPublicKey, true);
 
     let mG = secp256k1.publicKeyCombine([output, negatedPublicKey], true);
-    let labelHex = labels[Buffer.from(mG).toString('hex')];
+    let labelHex = labels[toHex(mG)];
     if (!labelHex) {
         mG = secp256k1.publicKeyCombine(
             [secp256k1.publicKeyNegate(output, true), negatedPublicKey],
             true,
         );
-        labelHex = labels[Buffer.from(mG).toString('hex')];
+        labelHex = labels[toHex(mG)];
     }
 
     if (labelHex) {
-        return secp256k1.privateKeyTweakAdd(
-            tweak,
-            Buffer.from(labelHex, 'hex'),
-        );
+        return secp256k1.privateKeyTweakAdd(tweak, fromHex(labelHex));
     }
 
     return null;
 };
 
 const processTweak = (
-    spendPublicKey: Buffer,
-    tweak: Buffer,
-    outputs: Buffer[],
-    matches: Map<string, Buffer>,
+    spendPublicKey: Uint8Array,
+    tweak: Uint8Array,
+    outputs: Uint8Array[],
+    matches: Map<string, Uint8Array>,
     labels?: LabelMap,
 ): number => {
     const tweakedPublicKey = secp256k1.publicKeyTweakAdd(
@@ -45,11 +47,15 @@ const processTweak = (
         true,
     );
 
-    for (let i = 0; i < outputs.length; i++) {
+    // iterate backwards to safely remove matched outputs from array
+    for (let i = outputs.length - 1; i >= 0; i--) {
         const output = outputs[i];
 
-        if (output.subarray(1).equals(tweakedPublicKey.subarray(1))) {
-            matches.set(output.toString('hex'), tweak);
+        // Compare the x-coordinate (skip first byte which is prefix)
+        const outputX = output.subarray(1);
+        const tweakedX = tweakedPublicKey.subarray(1);
+        if (areUint8ArraysEqual(outputX, tweakedX)) {
+            matches.set(toHex(output), tweak);
             outputs.splice(i, 1);
             return 1; // Increment counter
         } else if (labels) {
@@ -61,10 +67,8 @@ const processTweak = (
                 labels,
             );
             if (privateKeyTweak) {
-                matches.set(
-                    output.toString('hex'),
-                    Buffer.from(privateKeyTweak),
-                );
+                matches.set(toHex(output), new Uint8Array(privateKeyTweak));
+                outputs.splice(i, 1);
                 return 1; // Increment counter
             }
         }
@@ -75,17 +79,17 @@ const processTweak = (
 
 function scanOutputsUsingSecret(
     ecdhSecret: Uint8Array,
-    spendPublicKey: Buffer,
-    outputs: Buffer[],
+    spendPublicKey: Uint8Array,
+    outputs: Uint8Array[],
     labels?: LabelMap,
-): Map<string, Buffer> {
-    const matches = new Map<string, Buffer>();
+): Map<string, Uint8Array> {
+    const matches = new Map<string, Uint8Array>();
     let n = 0;
     let counterIncrement = 0;
     do {
         const tweak = createTaggedHash(
             'BIP0352/SharedSecret',
-            Buffer.concat([ecdhSecret, serialiseUint32(n)]),
+            concat([ecdhSecret, serialiseUint32(n)]),
         );
         counterIncrement = processTweak(
             spendPublicKey,
@@ -101,13 +105,13 @@ function scanOutputsUsingSecret(
 }
 
 export const scanOutputs = (
-    scanPrivateKey: Buffer,
-    spendPublicKey: Buffer,
-    sumOfInputPublicKeys: Buffer,
-    inputHash: Buffer,
-    outputs: Buffer[],
+    scanPrivateKey: Uint8Array,
+    spendPublicKey: Uint8Array,
+    sumOfInputPublicKeys: Uint8Array,
+    inputHash: Uint8Array,
+    outputs: Uint8Array[],
     labels?: LabelMap,
-): Map<string, Buffer> => {
+): Map<string, Uint8Array> => {
     const ecdhSecret = secp256k1.publicKeyTweakMul(
         sumOfInputPublicKeys,
         secp256k1.privateKeyTweakMul(scanPrivateKey, inputHash),
@@ -118,12 +122,12 @@ export const scanOutputs = (
 };
 
 export const scanOutputsWithTweak = (
-    scanPrivateKey: Buffer,
-    spendPublicKey: Buffer,
-    scanTweak: Buffer,
-    outputs: Buffer[],
+    scanPrivateKey: Uint8Array,
+    spendPublicKey: Uint8Array,
+    scanTweak: Uint8Array,
+    outputs: Uint8Array[],
     labels?: LabelMap,
-): Map<string, Buffer> => {
+): Map<string, Uint8Array> => {
     if (scanTweak.length === 33) {
         // Use publicKeyTweakMul for compressed pubkey
         const ecdhSecret = secp256k1.publicKeyTweakMul(

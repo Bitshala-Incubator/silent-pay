@@ -2,6 +2,7 @@ import { toOutputScript } from 'bitcoinjs-lib/src/address';
 import { Network } from 'bitcoinjs-lib';
 import { WITNESS_SCALE_FACTOR } from './consensus';
 import * as ecc from 'tiny-secp256k1';
+import { fromHex, concat } from '@silent-pay/core';
 
 type CoinStatus = {
     isConfirmed: boolean;
@@ -37,10 +38,10 @@ export class Coin {
         });
     }
 
-    toInput(network: Network, spendPubBuffer: Buffer) {
+    toInput(network: Network, spendPubBuffer: Uint8Array) {
         // if tweak present it's a silent payment output
         if (this.tweak) {
-            const tweakBuf = Buffer.from(this.tweak, 'hex');
+            const tweakBuf = fromHex(this.tweak);
 
             // use x-only pubkey (remove the first byte if it's a compressed pubkey)
             const xOnlyPub = spendPubBuffer.subarray(1, 33);
@@ -52,13 +53,18 @@ export class Coin {
                 hash: this.txid,
                 index: this.vout,
                 witnessUtxo: {
-                    script: Buffer.concat([
-                        Buffer.from([0x51, 0x20]), // OP_1 + PUSH32 (constructing Taproot script)
-                        result.xOnlyPubkey,
-                    ]),
+                    // Note: bitcoinjs-lib expects Buffer, not Uint8Array
+                    // Converting from Uint8Array to Buffer for compatibility
+                    script: Buffer.from(
+                        concat([
+                            new Uint8Array([0x51, 0x20]), // OP_1 + PUSH32 (constructing Taproot script)
+                            result.xOnlyPubkey,
+                        ]),
+                    ),
                     value: this.value,
                 },
-                tapInternalKey: xOnlyPub,
+                // Note: bitcoinjs-lib expects Buffer for tapInternalKey
+                tapInternalKey: Buffer.from(xOnlyPub),
             };
         } else {
             // regular P2WPKH handling...

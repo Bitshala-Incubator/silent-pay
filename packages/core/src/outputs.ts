@@ -7,7 +7,7 @@ import {
 } from './utility';
 import { decodeSilentPaymentAddress } from './encoding';
 import secp256k1 from 'secp256k1';
-import { Buffer } from 'buffer';
+import { toHex, concat, fromHex } from '../../../helpers/uint8array';
 import { Network } from 'bitcoinjs-lib';
 import { bitcoin } from './networks';
 
@@ -19,13 +19,13 @@ export const createOutputs = (
 ): Output[] => {
     const sumOfPrivateKeys = calculateSumOfPrivateKeys(inputPrivateKeys);
     const inputHash = createInputHash(
-        Buffer.from(secp256k1.publicKeyCreate(sumOfPrivateKeys)),
+        new Uint8Array(secp256k1.publicKeyCreate(sumOfPrivateKeys)),
         smallestOutpoint,
     );
 
     const paymentGroups = new Map<
         string,
-        { spendKey: Buffer; amount: number }[]
+        { spendKey: Uint8Array; amount: number }[]
     >();
 
     for (const { address, amount } of recipientAddresses) {
@@ -33,18 +33,16 @@ export const createOutputs = (
             address,
             network,
         );
-        if (paymentGroups.has(scanKey.toString('hex'))) {
-            paymentGroups
-                .get(scanKey.toString('hex'))
-                ?.push({ spendKey, amount });
+        if (paymentGroups.has(toHex(scanKey))) {
+            paymentGroups.get(toHex(scanKey))?.push({ spendKey, amount });
         } else {
-            paymentGroups.set(scanKey.toString('hex'), [{ spendKey, amount }]);
+            paymentGroups.set(toHex(scanKey), [{ spendKey, amount }]);
         }
     }
 
     const outputs: Output[] = [];
     for (const [scanKeyHex, paymentGroup] of paymentGroups.entries()) {
-        const scanKey = Buffer.from(scanKeyHex, 'hex');
+        const scanKey = fromHex(scanKeyHex);
         const ecdhSecret = secp256k1.publicKeyTweakMul(
             secp256k1.publicKeyTweakMul(scanKey, inputHash, true),
             sumOfPrivateKeys,
@@ -54,7 +52,7 @@ export const createOutputs = (
         for (const { spendKey, amount } of paymentGroup) {
             const tweak = createTaggedHash(
                 'BIP0352/SharedSecret',
-                Buffer.concat([Buffer.from(ecdhSecret), serialiseUint32(n)]),
+                concat([new Uint8Array(ecdhSecret), serialiseUint32(n)]),
             );
 
             const publicKey = secp256k1.publicKeyTweakAdd(
@@ -64,7 +62,7 @@ export const createOutputs = (
             );
 
             outputs.push({
-                script: Buffer.from(publicKey),
+                script: new Uint8Array(publicKey),
                 value: amount,
             });
             n++;
