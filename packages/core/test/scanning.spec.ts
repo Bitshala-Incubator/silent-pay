@@ -1,5 +1,10 @@
-import { LabelMap, scanOutputs, scanOutputsWithTweak } from '../src';
-import { Buffer } from 'buffer';
+import {
+    LabelMap,
+    scanOutputs,
+    scanOutputsWithTweak,
+    fromHex,
+    toHex,
+} from '../src';
 import { testData, scanTweakVectors } from './fixtures/scanning';
 
 describe('Scanning', () => {
@@ -15,11 +20,11 @@ describe('Scanning', () => {
             expected,
         }) => {
             const result = scanOutputs(
-                Buffer.from(scanPrivateKey, 'hex'),
-                Buffer.from(spendPublicKey, 'hex'),
-                Buffer.from(sumOfInputPublicKeys, 'hex'),
-                Buffer.from(inputHash, 'hex'),
-                outputs.map((output) => Buffer.from(output, 'hex')),
+                fromHex(scanPrivateKey),
+                fromHex(spendPublicKey),
+                fromHex(sumOfInputPublicKeys),
+                fromHex(inputHash),
+                outputs.map((output) => fromHex(output)),
                 labels as LabelMap,
             );
 
@@ -27,7 +32,7 @@ describe('Scanning', () => {
                 new Map(
                     Object.entries(expected).map(([output, tweak]) => [
                         output,
-                        Buffer.from(tweak as string, 'hex'),
+                        fromHex(tweak as string),
                     ]),
                 ),
             );
@@ -44,10 +49,10 @@ describe('Scanning', () => {
             expectedTweakHex,
         }) => {
             const res = scanOutputsWithTweak(
-                Buffer.from(scanPrivateKey, 'hex'),
-                Buffer.from(spendPublicKey, 'hex'),
-                Buffer.from(tweak, 'hex'),
-                outputs.map((o) => Buffer.from(o, 'hex')),
+                fromHex(scanPrivateKey),
+                fromHex(spendPublicKey),
+                fromHex(tweak),
+                outputs.map((o) => fromHex(o)),
             );
 
             if (!expectedTweakHex) {
@@ -55,7 +60,7 @@ describe('Scanning', () => {
             } else {
                 expect(res.size).toBeGreaterThan(0);
                 for (const [output, foundTweak] of res) {
-                    expect(foundTweak.toString('hex')).toBe(expectedTweakHex);
+                    expect(toHex(foundTweak)).toBe(expectedTweakHex);
                     expect(output).toBeDefined();
                 }
             }

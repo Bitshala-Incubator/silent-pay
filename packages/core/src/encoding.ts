@@ -1,8 +1,6 @@
 import { bech32m } from 'bech32';
 import secp256k1 from 'secp256k1';
-import { Buffer } from 'buffer';
 import { Network } from 'bitcoinjs-lib';
-import { bitcoin } from 'bitcoinjs-lib/src/networks';
 import {
     createTaggedHash,
     encodingLength,
@@ -10,6 +8,8 @@ import {
     serialiseUint32,
 } from './utility';
 import { SilentBlock } from './interface';
+import { bitcoin } from './networks';
+import { concat, toHex } from './uint8array';
 
 export const encodeSilentPaymentAddress = (
     scanPubKey: Uint8Array,
@@ -17,7 +17,7 @@ export const encodeSilentPaymentAddress = (
     network: Network = bitcoin,
     version: number = 0,
 ): string => {
-    const data = bech32m.toWords(Buffer.concat([scanPubKey, spendPubKey]));
+    const data = bech32m.toWords(concat([scanPubKey, spendPubKey]));
     data.unshift(version);
 
     return bech32m.encode(hrpFromNetwork(network), data, 1023);
@@ -26,14 +26,14 @@ export const encodeSilentPaymentAddress = (
 export const decodeSilentPaymentAddress = (
     address: string,
     network: Network = bitcoin,
-): { scanKey: Buffer; spendKey: Buffer } => {
+): { scanKey: Uint8Array; spendKey: Uint8Array } => {
     const { prefix, words } = bech32m.decode(address, 1023);
     if (prefix != hrpFromNetwork(network)) throw new Error('Invalid prefix!');
 
     const version = words.shift();
     if (version != 0) throw new Error('Invalid version!');
 
-    const key = Buffer.from(bech32m.fromWords(words));
+    const key = new Uint8Array(bech32m.fromWords(words));
 
     return {
         scanKey: key.slice(0, 33),
@@ -50,7 +50,7 @@ export const createLabeledSilentPaymentAddress = (
 ) => {
     const label = createTaggedHash(
         'BIP0352/Label',
-        Buffer.concat([scanPrivKey, serialiseUint32(m)]),
+        concat([scanPrivKey, serialiseUint32(m)]),
     );
     const scanPubKey = secp256k1.publicKeyCreate(scanPrivKey);
     const tweakedSpendPubKey = secp256k1.publicKeyTweakAdd(
@@ -70,15 +70,16 @@ const hrpFromNetwork = (network: Network): string => {
     return network.bech32 === 'bc' ? 'sp' : 'tsp';
 };
 
-export const parseSilentBlock = (data: Buffer): SilentBlock => {
-    const type = data.readUInt8(0);
+export const parseSilentBlock = (data: Uint8Array): SilentBlock => {
+    const view = new DataView(data.buffer, data.byteOffset);
+    const type = data[0];
     const transactions = [];
     let cursor = 1;
     const count = readVarInt(data, cursor);
     cursor += encodingLength(count);
 
     for (let i = 0; i < count; i++) {
-        const txid = data.subarray(cursor, cursor + 32).toString('hex');
+        const txid = toHex(data.subarray(cursor, cursor + 32));
         cursor += 32;
 
         const outputs = [];
@@ -86,19 +87,19 @@ export const parseSilentBlock = (data: Buffer): SilentBlock => {
         cursor += encodingLength(outputCount);
 
         for (let j = 0; j < outputCount; j++) {
-            const value = Number(data.readBigUInt64BE(cursor));
+            const value = Number(view.getBigUint64(cursor, false)); // big-endian
             cursor += 8;
 
-            const pubKey = data.subarray(cursor, cursor + 32).toString('hex');
+            const pubKey = toHex(data.subarray(cursor, cursor + 32));
             cursor += 32;
 
-            const vout = data.readUint32BE(cursor);
+            const vout = view.getUint32(cursor, false); // big-endian
             cursor += 4;
 
             outputs.push({ value, pubKey, vout });
         }
 
-        const scanTweak = data.subarray(cursor, cursor + 33).toString('hex');
+        const scanTweak = toHex(data.subarray(cursor, cursor + 33));
         cursor += 33;
 
         transactions.push({ txid, outputs, scanTweak });

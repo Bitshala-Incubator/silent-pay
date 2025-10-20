@@ -4,6 +4,8 @@ import {
     createInputHash,
     PrivateKey,
     isPubKey,
+    fromHex,
+    toHex,
 } from '../src';
 import {
     createTaggedHashData,
@@ -18,15 +20,15 @@ describe('Utility', () => {
         async (data: { keys: PrivateKey[]; expected: string }) => {
             const { keys, expected } = data;
             const sum = calculateSumOfPrivateKeys(keys);
-            expect(sum.toString('hex')).toBe(expected);
+            expect(toHex(sum)).toBe(expected);
         },
     );
 
     it.each(createTaggedHashData)(
         'should calculate tagged hash',
         ({ tag, hex, expected }) => {
-            const taggedHash = createTaggedHash(tag, Buffer.from(hex, 'hex'));
-            expect(taggedHash.toString('hex')).toBe(expected);
+            const taggedHash = createTaggedHash(tag, fromHex(hex));
+            expect(toHex(taggedHash)).toBe(expected);
         },
     );
 
@@ -34,19 +36,17 @@ describe('Utility', () => {
         'should calculate input hash',
         ({ sumOfInputPublicKeys, outpoint, expected }) => {
             const inputHash = createInputHash(
-                Buffer.from(sumOfInputPublicKeys, 'hex'),
+                fromHex(sumOfInputPublicKeys),
                 outpoint,
             );
-            expect(inputHash.toString('hex')).toBe(expected);
+            expect(toHex(inputHash)).toBe(expected);
         },
     );
 
     it.each(publicKeysTestData)(
         'should test for public key validity',
         ({ publickKey, valid }) => {
-            expect(isPubKey(Buffer.from(publickKey, 'hex'))).toStrictEqual(
-                valid,
-            );
+            expect(isPubKey(fromHex(publickKey))).toStrictEqual(valid);
         },
     );
 });

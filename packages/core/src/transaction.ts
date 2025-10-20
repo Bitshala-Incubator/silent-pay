@@ -1,7 +1,7 @@
 import { WITNESS_FLAG, WITNESS_MARKER } from './constants';
 import { encodingLength, isPubKey, readVarInt } from './utility';
 import { Input, Output } from './interface';
-import { Buffer } from 'buffer';
+import { fromHex, createView } from './uint8array';
 
 export class Transaction {
     version: number;
@@ -16,15 +16,16 @@ export class Transaction {
         this.locktime = 0;
     }
 
-    static fromBuffer(buffer: Buffer): Transaction {
+    static fromBuffer(buffer: Uint8Array): Transaction {
         const tx = new Transaction();
+        const view = createView(buffer);
         let offset = 0;
-        tx.version = buffer.readInt32LE(offset);
+        tx.version = view.getInt32(offset, true);
         offset += 4;
 
         const hasWitnesses =
-            buffer.readUInt8(offset) === WITNESS_MARKER &&
-            buffer.readUInt8(offset + 1) === WITNESS_FLAG;
+            buffer[offset] === WITNESS_MARKER &&
+            buffer[offset + 1] === WITNESS_FLAG;
         offset += hasWitnesses ? 2 : 0;
 
         const vinLen = readVarInt(buffer, offset);
@@ -32,13 +33,13 @@ export class Transaction {
         for (let i = 0; i < vinLen; i++) {
             const hash = buffer.subarray(offset, offset + 32);
             offset += 32;
-            const index = buffer.readUInt32LE(offset);
+            const index = createView(buffer, offset).getUint32(0, true);
             offset += 4;
             const scriptSize = readVarInt(buffer, offset);
             offset += encodingLength(scriptSize);
             const script = buffer.subarray(offset, offset + scriptSize);
             offset += scriptSize;
-            const sequence = buffer.readUInt32LE(offset);
+            const sequence = createView(buffer, offset).getUint32(0, true);
             offset += 4;
             tx.inputs.push({
                 hash: hash,
@@ -52,7 +53,7 @@ export class Transaction {
         const voutLen = readVarInt(buffer, offset);
         offset += encodingLength(vinLen);
         for (let i = 0; i < voutLen; i++) {
-            const value = buffer.readBigUint64LE(offset);
+            const value = createView(buffer, offset).getBigUint64(0, true);
             offset += 8;
             const scriptSize = readVarInt(buffer, offset);
             offset += encodingLength(scriptSize);
@@ -68,7 +69,7 @@ export class Transaction {
             for (let i = 0; i < vinLen; i++) {
                 const vectorSize = readVarInt(buffer, offset);
                 offset += encodingLength(vectorSize);
-                const vector: Buffer[] = [];
+                const vector: Uint8Array[] = [];
                 for (let j = 0; j < vectorSize; j++) {
                     const witnessItemLen = readVarInt(buffer, offset);
                     offset += encodingLength(witnessItemLen);
@@ -81,7 +82,7 @@ export class Transaction {
             }
         }
 
-        tx.locktime = buffer.readUInt32LE(offset);
+        tx.locktime = createView(buffer, offset).getUint32(0, true);
         offset += 4;
 
         if (offset !== buffer.length)
@@ -91,10 +92,24 @@ export class Transaction {
     }
 
     static fromHex(hex: string): Transaction {
-        return Transaction.fromBuffer(Buffer.from(hex, 'hex'));
+        if (!hex || hex.length === 0) {
+            throw new Error('Invalid transaction hex: empty string');
+        }
+
+        const buffer = fromHex(hex);
+
+        // fromHex returns empty array for invalid hex (lenient behavior)
+        // Detect this and provide better error message
+        if (buffer.length === 0 && hex.length > 0) {
+            throw new Error(
+                'Invalid transaction hex: contains invalid characters or has odd length',
+            );
+        }
+
+        return Transaction.fromBuffer(buffer);
     }
 
-    getPublicKeyFromOutput(index: number): Buffer | null {
+    getPublicKeyFromOutput(index: number): Uint8Array | null {
         const output = this.outputs[index];
 
         // taproot
@@ -127,10 +142,10 @@ export class Transaction {
         return null;
     }
 
-    getPublicKeyFromInput(index: number): Buffer | null {
+    getPublicKeyFromInput(index: number): Uint8Array | null {
         const input = this.inputs[index];
 
-        const scriptVector: Buffer[] = [];
+        const scriptVector: Uint8Array[] = [];
         const buffer = input.script;
         for (let offset = 0; offset < buffer.byteLength; ) {
             const sigItemLen = readVarInt(buffer, offset);

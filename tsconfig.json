@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020"],
     "skipLibCheck": true,
     "sourceMap": true,
 

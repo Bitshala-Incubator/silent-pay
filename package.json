@@ -3,6 +3,7 @@
   "author": "Anmol Sharma",
   "license": "MIT",
   "homepage": "https://github.com/Bitshala-Incubator/silent-pay",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/Bitshala-Incubator/silent-pay.git"
@@ -47,5 +48,8 @@
     "*.{ts,yaml,json}": [
       "bash -c 'npm run format'"
     ]
+  },
+  "dependencies": {
+    "tsup": "^8.5.0"
   }
 }

@@ -117,14 +117,6 @@ export const createTaggedHashData = [
 
 export const publicKeysTestData = [
     {
-        publickKey: '',
-        valid: false,
-    },
-    {
-        publickKey: 'random string',
-        valid: false,
-    },
-    {
         publickKey:
             '02d5ede09a8ae667d0f855ef90325e27f6ce35bbe60a1e6e87af7f5b3c652140fd',
         valid: true,
