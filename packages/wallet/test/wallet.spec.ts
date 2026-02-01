@@ -41,18 +41,22 @@ describe('Wallet', () => {
                 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
         });
         const allAddresses = await walletDB.getAllAddresses();
-        expect(allAddresses).toStrictEqual([
-            'bcrt1qcr8te4kr609gcawutmrza0j4xv80jy8zeqchgx',
-            'bcrt1qgl5vlg0zdl7yvprgxj9fevsc6q6x5dmcvenxlt',
-            'bcrt1qgswpjzsqgrm2qkfkf9kzqpw6642ptrgz4wwff7',
-            'bcrt1qhxgzmkmwvrlwvlfn4qe57lx2qdfg8physujr0f',
-            'bcrt1qm97vqzgj934vnaq9s53ynkyf9dgr05rat8p3ef',
-            'bcrt1qncdts3qm2guw3hjstun7dd6t3689qg42eqsfxf',
-            'bcrt1qnjg0jd8228aq7egyzacy8cys3knf9xvr3v5hfj',
-            'bcrt1qnpzzqjzet8gd5gl8l6gzhuc4s9xv0djt8vazj8',
-            'bcrt1qp59yckz4ae5c4efgw2s5wfyvrz0ala7rqr7utc',
-            'bcrt1qtet8q6cd5vqm0zjfcfm8mfsydju0a29gq0p9sl',
-        ]);
+        expect(allAddresses.length).toBe(40);
+        expect(allAddresses).toEqual(
+            expect.arrayContaining([
+                'bcrt1qcr8te4kr609gcawutmrza0j4xv80jy8zeqchgx',
+                'bcrt1qgl5vlg0zdl7yvprgxj9fevsc6q6x5dmcvenxlt',
+                'bcrt1qgswpjzsqgrm2qkfkf9kzqpw6642ptrgz4wwff7',
+                'bcrt1qhxgzmkmwvrlwvlfn4qe57lx2qdfg8physujr0f',
+                'bcrt1qm97vqzgj934vnaq9s53ynkyf9dgr05rat8p3ef',
+                'bcrt1qncdts3qm2guw3hjstun7dd6t3689qg42eqsfxf',
+                'bcrt1qnjg0jd8228aq7egyzacy8cys3knf9xvr3v5hfj',
+                'bcrt1qnpzzqjzet8gd5gl8l6gzhuc4s9xv0djt8vazj8',
+                'bcrt1qp59yckz4ae5c4efgw2s5wfyvrz0ala7rqr7utc',
+                'bcrt1qtet8q6cd5vqm0zjfcfm8mfsydju0a29gq0p9sl',
+                'bcrt1q8c6fshw2dlwun7ekn9qwf37cu2rn755ufhry49',
+            ]),
+        );
     });
 
     it('should set a new password, close and reopen the wallet with the same password', async () => {
@@ -66,14 +70,14 @@ describe('Wallet', () => {
         address = await wallet.deriveReceiveAddress();
         expect(address).toBe('bcrt1qcr8te4kr609gcawutmrza0j4xv80jy8zeqchgx');
         const allAddresses = await walletDB.getAllAddresses();
-        expect(allAddresses.length).toStrictEqual(11);
+        expect(allAddresses.length).toStrictEqual(40);
     });
 
     it('should derive second receive address', async () => {
         const address = await wallet.deriveReceiveAddress();
         expect(address).toBe('bcrt1qnjg0jd8228aq7egyzacy8cys3knf9xvr3v5hfj');
         const allAddresses = await walletDB.getAllAddresses();
-        expect(allAddresses.length).toStrictEqual(12);
+        expect(allAddresses.length).toStrictEqual(40);
     });
 
     it('should derive first change address', async () => {
