@@ -14,7 +14,7 @@
   "scripts": {
     "test": "jest",
     "test:cov": "jest --coverage",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "node init && tsup src/index.ts --format cjs,esm --dts",
     "types:check": "tsc --noemit --p tsconfig.build.json"
   },
   "repository": {

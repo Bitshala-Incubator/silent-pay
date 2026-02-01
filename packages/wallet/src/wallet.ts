@@ -28,10 +28,13 @@ export type WalletConfigOptions = {
     db: DbInterface;
     networkClient: NetworkInterface;
     lookahead?: number;
+    gapLimit?: number;
+    addressUsageFn?: (address: string) => Promise<boolean>;
 };
 
 const DEFAULT_ENCRYPTION_PASSWORD = '12345678';
 const DEFAULT_LOOKAHEAD = 10;
+const DEFAULT_GAP_LIMIT = 20;
 
 export class Wallet {
     private readonly db: DbInterface;
@@ -40,13 +43,17 @@ export class Wallet {
     private receiveDepth: number = 0;
     private changeDepth: number = 0;
     private lookahead: number;
+    private gapLimit: number;
     private spendKey: BIP32Interface;
     private scanKey: BIP32Interface;
+    private addressUsageFn?: (address: string) => Promise<boolean>;
 
     constructor(config: WalletConfigOptions) {
         this.db = config.db;
         this.network = config.networkClient;
         this.lookahead = config.lookahead ?? DEFAULT_LOOKAHEAD;
+        this.gapLimit = Math.max(1, config.gapLimit ?? DEFAULT_GAP_LIMIT);
+        this.addressUsageFn = config.addressUsageFn;
     }
 
     async init(params?: { mnemonic?: string; password?: string }) {
@@ -57,9 +64,13 @@ export class Wallet {
             const seed = mnemonicToSeedSync(mnemonic).toString('hex');
             this.masterKey = bip32.fromSeed(Buffer.from(seed, 'hex'));
             this.setPassword(password ?? DEFAULT_ENCRYPTION_PASSWORD);
-            for (let i = 0; i < this.lookahead; i++) {
-                await this.deriveAddress(`m/84'/0'/0'/0/${i}`);
-            }
+            this.spendKey = this.masterKey.derivePath(
+                `m/352'/${this.getCoinType()}'/0'/0'/0`,
+            );
+            this.scanKey = this.masterKey.derivePath(
+                `m/352'/${this.getCoinType()}'/0'/1'/0`,
+            );
+            await this.discoverAndPersistAddresses();
         } else {
             const { encryptedPrivateKey, encryptedChainCode } =
                 await this.db.getMasterKey();
@@ -81,7 +92,71 @@ export class Wallet {
             this.scanKey = this.masterKey.derivePath(
                 `m/352'/${this.getCoinType()}'/0'/1'/0`,
             );
+            await this.loadDepthsFromDb();
         }
+    }
+
+    private async loadDepthsFromDb(): Promise<void> {
+        try {
+            this.receiveDepth = await this.db.getReceiveDepth();
+        } catch (error) {
+            this.receiveDepth = 0;
+        }
+
+        try {
+            this.changeDepth = await this.db.getChangeDepth();
+        } catch (error) {
+            this.changeDepth = 0;
+        }
+    }
+
+    private async isAddressUsed(address: string): Promise<boolean> {
+        if (this.addressUsageFn) {
+            return await this.addressUsageFn(address);
+        }
+
+        const utxos = await this.network.getUTXOs(address);
+        return utxos.length > 0;
+    }
+
+    private async discoverAddressesForPath(
+        basePath: string,
+    ): Promise<number> {
+        let index = 0;
+        let gap = 0;
+        let lastUsedIndex = -1;
+
+        while (gap < this.gapLimit) {
+            const path = `${basePath}/${index}`;
+            const address = await this.deriveAddress(path);
+            const used = await this.isAddressUsed(address);
+
+            if (used) {
+                lastUsedIndex = index;
+                gap = 0;
+            } else {
+                gap++;
+            }
+
+            index++;
+        }
+
+        return lastUsedIndex + 1;
+    }
+
+    private async discoverAndPersistAddresses(): Promise<void> {
+        const receiveDepth = await this.discoverAddressesForPath(
+            `m/84'/0'/0'/0`,
+        );
+        const changeDepth = await this.discoverAddressesForPath(
+            `m/84'/0'/0'/1`,
+        );
+
+        this.receiveDepth = receiveDepth;
+        this.changeDepth = changeDepth;
+
+        await this.db.setReceiveDepth(this.receiveDepth);
+        await this.db.setChangeDepth(this.changeDepth);
     }
 
     async close() {
