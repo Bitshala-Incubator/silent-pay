@@ -1,0 +1,80 @@
+# Configuration for the labeler GitHub Action
+# This file defines patterns to automatically label pull requests
+
+# Package-specific labels
+'comp: core':
+  - 'packages/core/**'
+  
+'comp: esplora':
+  - 'packages/esplora/**'
+  
+'comp: level':
+  - 'packages/level/**'
+  
+'comp: wallet':
+  - 'packages/wallet/**'
+
+# File type labels
+'docs':
+  - '**/*.md'
+  - 'docs/**'
+  - '**/README*'
+  - '**/CHANGELOG*'
+  - '**/CONTRIBUTING*'
+  - '**/LICENSE*'
+
+'tests':
+  - '**/*.test.*'
+  - '**/*.spec.*'
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/__tests__/**'
+  - '**/fixtures/**'
+
+'ci/cd':
+  - '.github/**'
+  - '**/ci/**'
+  - '**/docker/**'
+  - '**/Dockerfile*'
+  - 'docker-compose*'
+  - '**/package*.json'
+  - '**/tsconfig*.json'
+  - '**/jest.config*'
+  - '**/.eslint*'
+  - '**/.prettier*'
+
+'dependencies':
+  - 'package-lock.json'
+  - 'package.json'
+  - '**/package.json'
+  - '**/package-lock.json'
+  - 'yarn.lock'
+  - 'pnpm-lock.yaml'
+
+'security':
+  - '**/.nvmrc'
+  - '**/security/**'
+  - '**/*security*'
+  - '**/*vulnerability*'
+  - '**/audit*'
+
+'performance':
+  - '**/*perf*'
+  - '**/*benchmark*'
+  - '**/*optimization*'
+
+'api':
+  - '**/src/interface*'
+  - '**/src/**/interface*'
+  - '**/api/**'
+  - '**/*api*'
+
+'bug':
+  - '**/fix/**'
+  - '**/bugfix/**'
+  - '**/hotfix/**'
+
+'enhancement':
+  - '**/feature/**'
+  - '**/feat/**'
+  - '**/enhancement/**'
