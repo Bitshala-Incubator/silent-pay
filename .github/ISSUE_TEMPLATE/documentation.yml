@@ -1,0 +1,113 @@
+name: Documentation Fix
+description: Report issues with documentation or suggest improvements
+title: "[DOCS] "
+labels: ["documentation", "good first issue"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Please fill out this form to report documentation issues or suggest improvements.
+  
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Type of Documentation Issue
+      description: What kind of documentation issue are you reporting?
+      options:
+        - Typo/Grammar error
+        - Missing information
+        - Incorrect information
+        - Outdated content
+        - Unclear explanation
+        - Missing examples
+        - Broken links
+        - Formatting issues
+        - Accessibility improvements
+        - Translation needed
+        - Other
+    validations:
+      required: true
+  
+  - type: input
+    id: location
+    attributes:
+      label: Document Location
+      description: Where is the documentation issue located?
+      placeholder: "e.g., README.md, /docs/api.md, line 42, specific section"
+    validations:
+      required: true
+  
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: What is the current problematic content? (Copy and paste the exact text if possible)
+      placeholder: Paste the current documentation content that needs to be fixed...
+    validations:
+      required: false
+  
+  - type: textarea
+    id: expected-content
+    attributes:
+      label: Suggested Fix/Improvement
+      description: What should the content say instead? Or what improvements do you suggest?
+      placeholder: |
+        Describe the fix or improvement you're suggesting...
+        You can provide:
+        - Corrected text
+        - Additional information that should be included
+        - Better explanations
+        - Examples that would help
+    validations:
+      required: true
+  
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Why is this fix needed? How will it help users?
+      placeholder: |
+        - How did you encounter this issue?
+        - What confusion did it cause?
+        - Who would benefit from this fix?
+        - Any relevant use cases or scenarios
+    validations:
+      required: false
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this documentation fix?
+      options:
+        - Low - Minor improvement
+        - Medium - Affects user understanding
+        - High - Blocks user from proceeding
+        - Critical - Contains incorrect information
+    validations:
+      required: false
+  
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help with this fix?
+      options:
+        - label: I would like to work on fixing this documentation issue
+          required: false
+        - label: I can provide additional details if needed
+          required: false
+  
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have checked that this issue doesn't already exist
+          required: true
+        - label: I have provided specific location information
+          required: true
+        - label: I have clearly described the problem and suggested solution
+          required: true
