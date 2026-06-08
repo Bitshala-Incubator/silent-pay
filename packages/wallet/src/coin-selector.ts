@@ -3,8 +3,10 @@ import { Transaction } from 'bitcoinjs-lib';
 
 class CoinPointer {
     effectiveValue: number;
+    spendingSize: number;
 
     constructor(public coin: Coin, feeRate: number) {
+        this.spendingSize = coin.estimateSpendingSize();
         this.effectiveValue = coin.value - coin.estimateSpendingFee(feeRate);
     }
 }
@@ -23,11 +25,14 @@ export class CoinSelector {
         coins: Coin[];
         change: number;
     } {
-        let target = tx.outs.reduce((acc, out) => acc + out.value, 0);
+        let target = tx.outs.reduce(
+            (acc: number, out: { value: number }) => acc + out.value,
+            0,
+        );
         target += tx.virtualSize() * this.feeRate;
 
+        const costOfChange = this.costOfChange;
         const changeOutputFee = 31 * this.feeRate; // P2WPKH is 31 B
-        target += changeOutputFee;
 
         const pointers = coins.map(
             (coin) => new CoinPointer(coin, this.feeRate),
@@ -35,24 +40,79 @@ export class CoinSelector {
         // sort coins by effective value in descending order
         pointers.sort((a, b) => b.effectiveValue - a.effectiveValue);
 
-        const selected = this.selectCoins(pointers, target);
+        let bestSelection: number[] = [];
+        let bestWaste = Number.MAX_SAFE_INTEGER;
+        let isChange = false;
 
-        let change =
-            selected.reduce(
-                (acc, index) => acc + pointers[index].effectiveValue,
-                0,
-            ) - target;
+        // Try Branch and Bound first
+        const bnbResult = this.selectBranchAndBound(
+            pointers,
+            target,
+            costOfChange,
+        );
+        if (bnbResult && bnbResult.length > 0) {
+            bestSelection = bnbResult;
+            bestWaste = this.getWaste(bnbResult, 0, target, pointers);
+        }
 
-        // Calculate the cost of change
-        const costOfChange = this.costOfChange;
+        // Add change fee to target for other algorithms
+        const targetWithChange = target + changeOutputFee;
 
-        // Check if change is less than the cost of change
-        if (change <= costOfChange) {
-            change = 0;
+        // Lowest Larger
+        const llResult = this.selectLowestLarger(pointers, targetWithChange);
+        if (llResult.length > 0) {
+            const currWaste = this.getWaste(
+                llResult,
+                costOfChange,
+                targetWithChange,
+                pointers,
+            );
+            if (currWaste < bestWaste) {
+                bestSelection = llResult;
+                bestWaste = currWaste;
+                isChange = true;
+            }
+        }
+
+        // Single Random Draw
+        const srdResult = this.selectSingleRandomDraw(
+            pointers,
+            targetWithChange,
+        );
+        if (srdResult.length > 0) {
+            const currWaste = this.getWaste(
+                srdResult,
+                costOfChange,
+                targetWithChange,
+                pointers,
+            );
+            if (currWaste <= bestWaste) {
+                bestSelection = srdResult;
+                bestWaste = currWaste;
+                isChange = true;
+            }
+        }
+
+        if (bestSelection.length === 0) {
+            throw new Error('Insufficient funds');
+        }
+
+        let change = 0;
+        if (isChange) {
+            change =
+                bestSelection.reduce(
+                    (acc, index) => acc + pointers[index].effectiveValue,
+                    0,
+                ) - targetWithChange;
+
+            // Check if change is less than the cost of change
+            if (change <= costOfChange) {
+                change = 0;
+            }
         }
 
         return {
-            coins: selected.map((index) => pointers[index].coin),
+            coins: bestSelection.map((index) => pointers[index].coin),
             change,
         };
     }
@@ -87,12 +147,119 @@ export class CoinSelector {
         return costOfChangeOutput + costOfSpendingChange;
     }
 
-    private selectCoins(pointers: CoinPointer[], target: number) {
-        const selected = this.selectLowestLarger(pointers, target);
-        if (selected.length > 0) return selected;
+    private getWaste(
+        selected: number[],
+        costOfChange: number,
+        target: number,
+        pointers: CoinPointer[],
+    ) {
+        let waste = 0;
+        let selectedAmount = 0;
 
-        // if we are here it means that target is greater than the sum of all coins we have
-        throw new Error('Insufficient funds');
+        for (const i of selected) {
+            const pointer = pointers[i];
+            selectedAmount += pointer.effectiveValue;
+            waste +=
+                (this.feeRate - CoinSelector.LONG_TERM_FEERATE) *
+                pointer.spendingSize;
+        }
+
+        if (costOfChange > 0) {
+            waste += costOfChange;
+        } else {
+            waste += selectedAmount - target;
+        }
+
+        return waste;
+    }
+
+    private selectBranchAndBound(
+        pointers: CoinPointer[],
+        target: number,
+        costOfChange: number,
+    ) {
+        const selected: number[] = [];
+        let currValue = 0;
+        let remainingValue = 0;
+        let index = 0;
+
+        for (const pointer of pointers) {
+            remainingValue += pointer.effectiveValue;
+        }
+
+        if (remainingValue < target) {
+            return [];
+        }
+
+        let tries = 100000;
+        let bestWaste = Number.MAX_SAFE_INTEGER;
+        let bestSelection: number[] = [];
+
+        while (tries-- > 0) {
+            let backtrack = false;
+
+            if (
+                currValue + remainingValue < target ||
+                currValue > target + costOfChange
+            ) {
+                backtrack = true;
+            } else if (currValue >= target) {
+                const currWaste = this.getWaste(selected, 0, target, pointers);
+                if (currWaste <= bestWaste) {
+                    bestSelection = selected.slice();
+                    bestWaste = currWaste;
+                }
+                backtrack = true;
+            }
+
+            if (backtrack) {
+                if (selected.length === 0) break;
+
+                while (--index > selected[selected.length - 1]) {
+                    remainingValue += pointers[index].effectiveValue;
+                }
+
+                currValue -= pointers[index].effectiveValue;
+                selected.pop();
+            } else {
+                const pointer = pointers[index];
+                remainingValue -= pointer.effectiveValue;
+
+                if (
+                    selected.length === 0 ||
+                    index - 1 === selected[selected.length - 1] ||
+                    pointer.effectiveValue !==
+                        pointers[index - 1].effectiveValue
+                ) {
+                    selected.push(index);
+                    currValue += pointer.effectiveValue;
+                }
+            }
+            index++;
+        }
+
+        return bestSelection;
+    }
+
+    private selectSingleRandomDraw(pointers: CoinPointer[], target: number) {
+        const arr = Array.from(pointers.keys());
+        arr.sort(() => Math.random() - 0.5);
+
+        let index = 0;
+        const selected: number[] = [];
+        let selectedValue = 0;
+
+        while (index < arr.length) {
+            const pointer = pointers[arr[index]];
+            selectedValue += pointer.effectiveValue;
+            selected.push(arr[index]);
+            if (selectedValue >= target) {
+                return selected;
+            }
+            index++;
+        }
+
+        return [];
     }
 
     private selectLowestLarger(pointers: CoinPointer[], amount: number) {
