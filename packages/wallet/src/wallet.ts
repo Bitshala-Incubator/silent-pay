@@ -265,6 +265,8 @@ export class Wallet {
         const tx = await this.createAndSignTransaction([{ address, amount }]);
         await this.network.broadcast(tx.toHex());
 
+        await this.db.saveSpendTransaction(tx.getId(), address);
+
         return tx.getId();
     }
 
@@ -374,7 +376,13 @@ export class Wallet {
         const tx = psbt.extractTransaction();
         await this.network.broadcast(tx.toHex());
 
+        await this.db.saveSpendTransaction(tx.getId(), address);
+
         return tx.getId();
+    }
+
+    async getSpendTransactions(): Promise<{txId: string, label: string}[]> {
+        return await this.db.getSpendTransactions();
     }
 
     getCoinType(): number {
