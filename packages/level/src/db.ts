@@ -116,4 +116,13 @@ export class WalletDB implements DbInterface {
             throw e;
         }
     }
+
+    async saveSpendTransaction(txId: string, label: string): Promise<void> {
+        await this.db.sublevel(wdb.S).put(txId, label);
+    }
+
+    async getSpendTransactions(): Promise<{txId: string, label: string}[]> {
+        const entries = await this.db.sublevel(wdb.S).iterator().all();
+        return entries.map(([txId, label]) => ({ txId, label }));
+    }
 }

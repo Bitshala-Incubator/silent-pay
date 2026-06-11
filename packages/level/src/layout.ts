@@ -7,4 +7,5 @@ export const wdb = {
     D: 'D', // Address depth
     C: 'C', // Coins
     SP: 'SP', // Silent payment address
+    S: 'S', // Spend transactions
 };
