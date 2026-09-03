@@ -9,9 +9,9 @@ module.exports = {
     coveragePathIgnorePatterns: ['.*.spec.ts'],
     coverageDirectory: './coverage',
     moduleNameMapper: {
-        '@silent-pay/core': '@silent-pay/core/src',
-        '@silent-pay/esplora': '@silent-pay/esplora/src',
-        '@silent-pay/level': '@silent-pay/level/src',
-        '@silent-pay/wallet': '@silent-pay/wallet/src',
+        '^@silent-pay/core(.*)$': '<rootDir>/packages/core/src$1',
+        '^@silent-pay/esplora(.*)$': '<rootDir>/packages/esplora/src$1',
+        '^@silent-pay/level(.*)$': '<rootDir>/packages/level/src$1',
+        '^@silent-pay/wallet(.*)$': '<rootDir>/packages/wallet/src$1',
     },
 };

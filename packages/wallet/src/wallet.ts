@@ -146,7 +146,10 @@ export class Wallet {
             )
         ).reduce((acc, utxos) => [...acc, ...utxos], []);
 
-        await this.db.saveUnspentCoins(coins);
+        const existingCoins = await this.getExistingCoins();
+        const silentCoins = existingCoins.filter((coin) => coin.tweak);
+        const merged = this.mergeCoins(silentCoins, coins);
+        await this.db.saveUnspentCoins(merged);
     }
 
     async getBalance(): Promise<number> {
@@ -461,7 +464,28 @@ export class Wallet {
         );
 
         if (matchedUTXOs.length) {
-            await this.db.saveUnspentCoins(matchedUTXOs);
+            const existingCoins = await this.getExistingCoins();
+            const merged = this.mergeCoins(existingCoins, matchedUTXOs);
+            await this.db.saveUnspentCoins(merged);
+        }
+    }
+
+    private mergeCoins(existing: Coin[], incoming: Coin[]): Coin[] {
+        const map = new Map<string, Coin>();
+        for (const coin of existing) {
+            map.set(`${coin.txid}:${coin.vout}`, coin);
+        }
+        for (const coin of incoming) {
+            map.set(`${coin.txid}:${coin.vout}`, coin);
+        }
+        return Array.from(map.values());
+    }
+
+    private async getExistingCoins(): Promise<Coin[]> {
+        try {
+            return await this.db.getUnspentCoins();
+        } catch {
+            return [];
         }
     }
 }
