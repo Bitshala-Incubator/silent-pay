@@ -50,15 +50,14 @@ export class EsploraClient implements NetworkInterface {
             const response = await axios(config);
             return response.data;
         } catch (error) {
-            if (error instanceof AxiosError) {
-                if (error.response?.data?.title) {
-                    console.error(
-                        `${config.method} Error: ${
-                            config.url
-                        }\n${JSON.stringify(error.response.data)}`,
-                    );
-                }
-            } else throw error;
+            if (error instanceof AxiosError && error.response?.data?.title) {
+                console.error(
+                    `${config.method} Error: ${
+                        config.url
+                    }\n${JSON.stringify(error.response.data)}`,
+                );
+            }
+            throw error;
         }
     }
 
