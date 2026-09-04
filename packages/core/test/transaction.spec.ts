@@ -78,4 +78,89 @@ describe('Transaction', () => {
         });
         expect(receivedInPubkeys).toStrictEqual(tx.raw.inPubkeys);
     });
+
+    describe('varint offset regression', () => {
+        /**
+         * Build a minimal non-witness transaction:
+         *   4 bytes  version
+         *   varint   vinLen
+         *   vinLen × (32 hash + 4 index + varint scriptLen=0 + 0 script + 4 seq)
+         *   varint   voutLen
+         *   voutLen × (8 value + varint scriptLen + script)
+         *   4 bytes  locktime
+         */
+        function buildMinimalTx(
+            numInputs: number,
+            numOutputs: number,
+        ): Uint8Array {
+            const parts: number[] = [];
+
+            // version = 1 (little-endian)
+            parts.push(0x01, 0x00, 0x00, 0x00);
+
+            // vinLen varint
+            pushVarint(parts, numInputs);
+            for (let i = 0; i < numInputs; i++) {
+                // prev hash (32 bytes of 0xaa)
+                for (let j = 0; j < 32; j++) parts.push(0xaa);
+                // prev index = i (little-endian u32)
+                parts.push(i & 0xff, 0x00, 0x00, 0x00);
+                // scriptSig length = 0
+                parts.push(0x00);
+                // sequence = 0xffffffff
+                parts.push(0xff, 0xff, 0xff, 0xff);
+            }
+
+            // voutLen varint
+            pushVarint(parts, numOutputs);
+            for (let i = 0; i < numOutputs; i++) {
+                // value = 1000 sats (little-endian u64)
+                const val = 1000 + i;
+                parts.push(
+                    val & 0xff,
+                    (val >> 8) & 0xff,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                );
+                // scriptPubKey: OP_RETURN (0x6a) — 1 byte script
+                parts.push(0x01); // scriptLen = 1
+                parts.push(0x6a); // OP_RETURN
+            }
+
+            // locktime = 0
+            parts.push(0x00, 0x00, 0x00, 0x00);
+
+            return new Uint8Array(parts);
+        }
+
+        function pushVarint(arr: number[], n: number) {
+            if (n < 0xfd) {
+                arr.push(n);
+            } else if (n <= 0xffff) {
+                arr.push(0xfd, n & 0xff, (n >> 8) & 0xff);
+            }
+        }
+
+        it('should correctly parse when vinLen and voutLen differ', () => {
+            const buf = buildMinimalTx(1, 2);
+            const tx = Transaction.fromBuffer(buf);
+
+            expect(tx.inputs).toHaveLength(1);
+            expect(tx.outputs).toHaveLength(2);
+            expect(tx.outputs[0].value).toBe(1000);
+            expect(tx.outputs[1].value).toBe(1001);
+        });
+
+        it('should correctly parse when vinLen and voutLen are both > 1', () => {
+            const buf = buildMinimalTx(3, 5);
+            const tx = Transaction.fromBuffer(buf);
+
+            expect(tx.inputs).toHaveLength(3);
+            expect(tx.outputs).toHaveLength(5);
+        });
+    });
 });
