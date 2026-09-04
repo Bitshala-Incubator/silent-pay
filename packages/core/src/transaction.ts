@@ -51,7 +51,7 @@ export class Transaction {
         }
 
         const voutLen = readVarInt(buffer, offset);
-        offset += encodingLength(vinLen);
+        offset += encodingLength(voutLen);
         for (let i = 0; i < voutLen; i++) {
             const value = createView(buffer, offset).getBigUint64(0, true);
             offset += 8;
