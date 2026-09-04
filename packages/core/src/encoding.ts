@@ -26,19 +26,32 @@ export const encodeSilentPaymentAddress = (
 export const decodeSilentPaymentAddress = (
     address: string,
     network: Network = bitcoin,
-): { scanKey: Uint8Array; spendKey: Uint8Array } => {
+): { scanKey: Uint8Array; spendKey: Uint8Array; version: number } => {
     const { prefix, words } = bech32m.decode(address, 1023);
-    if (prefix != hrpFromNetwork(network)) throw new Error('Invalid prefix!');
+    if (prefix !== hrpFromNetwork(network)) throw new Error('Invalid prefix!');
 
     const version = words.shift();
-    if (version != 0) throw new Error('Invalid version!');
+    if (version === undefined || version > 30)
+        throw new Error('Unsupported version!');
 
-    const key = new Uint8Array(bech32m.fromWords(words));
+    const data = new Uint8Array(bech32m.fromWords(words));
 
-    return {
-        scanKey: key.slice(0, 33),
-        spendKey: key.slice(33),
-    };
+    // v0: payload must be exactly 66 bytes
+    // v1–30: payload must be at least 66 bytes (extra data is discarded)
+    if (version === 0 && data.length !== 66)
+        throw new Error('Invalid payload length for version 0!');
+    if (version > 0 && data.length < 66)
+        throw new Error('Payload too short!');
+
+    const scanKey = data.slice(0, 33);
+    const spendKey = data.slice(33, 66);
+
+    if (!secp256k1.publicKeyVerify(scanKey))
+        throw new Error('Invalid scan public key!');
+    if (!secp256k1.publicKeyVerify(spendKey))
+        throw new Error('Invalid spend public key!');
+
+    return { scanKey, spendKey, version };
 };
 
 export const createLabeledSilentPaymentAddress = (
