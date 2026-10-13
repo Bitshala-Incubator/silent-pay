@@ -23,7 +23,12 @@ const handleLabels = (
     }
 
     if (labelHex) {
-        return secp256k1.privateKeyTweakAdd(tweak, fromHex(labelHex));
+        // `privateKeyTweakAdd` also writes into its first argument; copy so the
+        // tweak passed in stays usable after this call.
+        return secp256k1.privateKeyTweakAdd(
+            new Uint8Array(tweak),
+            fromHex(labelHex),
+        );
     }
 
     return null;
@@ -109,7 +114,9 @@ export const scanOutputs = (
 ): Map<string, Uint8Array> => {
     const ecdhSecret = secp256k1.publicKeyTweakMul(
         sumOfInputPublicKeys,
-        secp256k1.privateKeyTweakMul(scanPrivateKey, inputHash),
+        // `privateKeyTweakMul` writes its result into its first argument, so the
+        // caller's scan key has to be copied before it is tweaked.
+        secp256k1.privateKeyTweakMul(new Uint8Array(scanPrivateKey), inputHash),
         true,
     );
 
