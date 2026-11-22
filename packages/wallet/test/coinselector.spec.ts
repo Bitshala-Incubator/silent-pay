@@ -70,4 +70,32 @@ describe('CoinSelector', () => {
             expect(change).toBe(expectedChange);
         },
     );
+
+    it('throws Insufficient funds when coins are insufficient to cover target and fees', () => {
+        const coins = [new Coin({ value: 1000 })];
+        const tx = new Transaction();
+        tx.addOutput(
+            Buffer.from(`0014${crypto.randomBytes(20).toString('hex')}`),
+            5000,
+        );
+
+        expect(() => coinSelector.select(coins, tx)).toThrow(
+            'Insufficient funds',
+        );
+    });
+
+    it('selects optimal coin using binary search with left-branch traversal', () => {
+        const coinValues = [20000, 15000, 10000, 8000, 5000, 2000];
+        const coins = coinValues.map((value) => new Coin({ value }));
+        const tx = new Transaction();
+        tx.addOutput(
+            Buffer.from(`0014${crypto.randomBytes(20).toString('hex')}`),
+            6000,
+        );
+
+        const { coins: selected, change } = coinSelector.select(coins, tx);
+        expect(selected.length).toBe(1);
+        expect(selected[0].value).toBe(8000);
+        expect(change).toBeGreaterThan(0);
+    });
 });

@@ -75,13 +75,14 @@ export class Wallet {
                 decryptedPrivateKey,
                 decryptedChainCode,
             );
-            this.spendKey = this.masterKey.derivePath(
-                `m/352'/${this.getCoinType()}'/0'/0'/0`,
-            );
-            this.scanKey = this.masterKey.derivePath(
-                `m/352'/${this.getCoinType()}'/0'/1'/0`,
-            );
         }
+
+        this.spendKey = this.masterKey.derivePath(
+            `m/352'/${this.getCoinType()}'/0'/0'/0`,
+        );
+        this.scanKey = this.masterKey.derivePath(
+            `m/352'/${this.getCoinType()}'/0'/1'/0`,
+        );
     }
 
     async close() {

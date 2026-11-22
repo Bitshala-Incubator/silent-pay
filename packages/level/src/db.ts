@@ -70,7 +70,14 @@ export class WalletDB implements DbInterface {
     }
 
     async hasAddress(address: string): Promise<boolean> {
-        return (await this.db.sublevel(wdb.A).get(address)) !== undefined;
+        try {
+            return (await this.db.sublevel(wdb.A).get(address)) !== undefined;
+        } catch (e) {
+            if ((e as { code?: string }).code === 'LEVEL_NOT_FOUND') {
+                return false;
+            }
+            throw e;
+        }
     }
 
     async getReceiveDepth(): Promise<number> {
